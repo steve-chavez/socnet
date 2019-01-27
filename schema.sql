@@ -1,11 +1,10 @@
 create table users (
   id        serial  primary key
 , username  text    not null
--- , email     text    not null
--- , password  text    not null
 );
 
-create type friendship_status as enum ('pending', 'accepted', 'blocked');
+create type friendship_status as enum (
+  'pending', 'accepted', 'blocked');
 
 create table friendships (
   id              serial             primary key
@@ -24,7 +23,6 @@ on friendships(
 );
 
 grant select, insert, update(status, since), delete on friendships to socnet_user;
---grant select on friendships to socnet_anon; -- for the case of public profiles
 
 create type post_audience as enum (
   'public', 'personal', 'friends', 'whitelist', 'blacklist');
@@ -41,19 +39,17 @@ alter table posts enable row level security;
 grant select, insert, update(title, body, audience), delete on posts to socnet_user;
 grant select on posts to socnet_anon; -- for the case of public posts
 
-create table posts_whitelist (
-  post_id        int  not null  references posts(id)
-, friendship_id  int  not null  references friendships(id)
+create type posts_list_type as enum (
+  'whitelist', 'blacklist'
 );
-grant select, insert, delete on posts_whitelist to socnet_user;
 
-create table posts_blacklist (
-  post_id        int  not null  references posts(id)
-, friendship_id  int  not null  references friendships(id)
+create table posts_list (
+  post_id        int              not null references posts(id)
+, friendship_id  int              not null references friendships(id)
+, list_type      posts_list_type  not null
 );
-grant select, insert, delete on posts_blacklist to socnet_user;
+grant select, insert, delete on posts_list to socnet_user;
 
--- only friends can see posts
 drop policy if exists users_policy on posts;
 create policy users_policy on posts to socnet_user
 using (
@@ -83,12 +79,13 @@ using (
             then f.target_user_id
             else f.source_user_id
           end
-        from posts_whitelist wl
+        from posts_list wl
         join friendships f
-          on wl.friendship_id = f.id
+          on wl.friendship_id = f.id    and
+             wl.list_type     = 'whitelist'
         where
-          wl.post_id = posts.id  and
-          f.status   = 'accepted'
+          wl.post_id   = posts.id     and
+          f.status     = 'accepted'
       )
     when 'blacklist'
       then util.jwt_user_id() in (
@@ -98,8 +95,9 @@ using (
             else source_user_id
           end
         from friendships f
-        left join posts_blacklist bl
-          on bl.friendship_id = f.id
+        left join posts_list bl
+          on bl.friendship_id = f.id and
+             bl.list_type     = 'blacklist'
         where
           f.status          =  'accepted'                         and
           posts.creator_id  in  (source_user_id, target_user_id)  and

@@ -1,8 +1,10 @@
 begin;
 
-select no_plan();
+do $$ begin perform no_plan(); end $$;
 
-select 'friendships constraints' as describe;
+\echo =======================
+\echo friendships constraints
+\echo =======================
 
 select
   throws_ok(
@@ -23,7 +25,14 @@ select
     'There can only be a friendship between two users'
   );
 
-select 'posts RLS' as describe;
+\echo =========
+\echo posts RLS
+\echo =========
+
+\echo
+\echo When audience=friends
+\echo =====================
+\echo
 
 set local role socnet_anon;
 reset "request.jwt.claim.user_id";
@@ -33,7 +42,7 @@ select
     $$
     select * from posts where id = 1;
     $$,
-    'When audience=friends, public cannot see the post'
+    'public cannot see the post'
   );
 
 set local role socnet_user;
@@ -44,7 +53,7 @@ select
     $$
     select * from posts where id = 1;
     $$,
-    'When audience=friends, the creator can see its post'
+    'the creator can see its post'
   );
 
 set local role socnet_user;
@@ -55,7 +64,7 @@ select
     $$
     select * from posts where id = 1;
     $$,
-    'When audience=friends, friends can see the post'
+    'friends can see the post'
   );
 
 set local role socnet_user;
@@ -66,18 +75,22 @@ select
     $$
     select * from posts where id = 1;
     $$,
-    'When audience=friends, non-friends cannot see the post'
+    'non-friends cannot see the post'
   );
 
 set local role socnet_anon;
 reset "request.jwt.claim.user_id";
 
-select
-  is_empty(
+\echo
+\echo When audience=personal
+\echo ======================
+\echo
+
+select is_empty(
     $$
     select * from posts where id = 2;
     $$,
-    'When audience=personal, public cannot see the user post'
+    'public cannot see the user post'
   );
 
 set local role socnet_user;
@@ -88,7 +101,7 @@ select
     $$
     select * from posts where id = 2;
     $$,
-    'When audience=personal, only the creator can see its post'
+    'only the creator can see its post'
   );
 
 set local role socnet_user;
@@ -99,7 +112,7 @@ select
     $$
     select * from posts where id = 2;
     $$,
-    'When audience=personal, friends cannot see the user post'
+    'friends cannot see the user post'
   );
 
 set local role socnet_user;
@@ -110,8 +123,13 @@ select
     $$
     select * from posts where id = 2;
     $$,
-    'When audience=personal, non-friends cannot see the user post'
+    'non-friends cannot see the user post'
   );
+
+\echo
+\echo When audience=public
+\echo =====================
+\echo
 
 set local role socnet_anon;
 reset "request.jwt.claim.user_id";
@@ -121,7 +139,7 @@ select
     $$
     select * from posts where id = 3;
     $$,
-    'When audience=public, public can see the user post'
+    'public can see the user post'
   );
 
 set local role socnet_user;
@@ -132,7 +150,7 @@ select
     $$
     select * from posts where id = 3;
     $$,
-    'When audience=public, the creator can see its own post'
+    'the creator can see its own post'
   );
 
 set local role socnet_user;
@@ -143,7 +161,7 @@ select
     $$
     select * from posts where id = 3;
     $$,
-    'When audience=public, friends can see the user post'
+    'friends can see the user post'
   );
 
 set local role socnet_user;
@@ -154,8 +172,13 @@ select
     $$
     select * from posts where id = 3;
     $$,
-    'When audience=public, non-friends can see the user post'
+    'non-friends can see the user post'
   );
+
+\echo
+\echo When audience=whitelist
+\echo =======================
+\echo
 
 set local role socnet_anon;
 reset "request.jwt.claim.user_id";
@@ -165,7 +188,7 @@ select
     $$
     select * from posts where id = 4;
     $$,
-    'When audience=whitelist, public cannot see the user post'
+    'public cannot see the user post'
   );
 
 set local role socnet_user;
@@ -176,7 +199,7 @@ select
     $$
     select * from posts where id = 4;
     $$,
-    'When audience=whitelist, the creator can see its own post'
+    'the creator can see its own post'
   );
 
 set local role socnet_user;
@@ -187,7 +210,7 @@ select
     $$
     select * from posts where id = 4;
     $$,
-    'When audience=whitelist, some friends can see the user post'
+    'some friends can see the user post'
   );
 
 set local role socnet_user;
@@ -198,7 +221,7 @@ select
     $$
     select * from posts where id = 4;
     $$,
-    'When audience=whitelist, some friends cannot see the user post'
+    'some friends cannot see the user post'
   );
 
 set local role socnet_user;
@@ -209,8 +232,13 @@ select
     $$
     select * from posts where id = 4;
     $$,
-    'When audience=whitelist, non-friends cannot see the user post'
+    'non-friends cannot see the user post'
   );
+
+\echo
+\echo When audience=blacklist
+\echo =======================
+\echo
 
 set local role socnet_anon;
 reset "request.jwt.claim.user_id";
@@ -220,7 +248,7 @@ select
     $$
     select * from posts where id = 5;
     $$,
-    'When audience=blacklist, public cannot see the user post'
+    'public cannot see the user post'
   );
 
 set local role socnet_user;
@@ -231,7 +259,7 @@ select
     $$
     select * from posts where id = 5;
     $$,
-    'When audience=blacklist, the creator can see its own post'
+    'the creator can see its own post'
   );
 
 set local role socnet_user;
@@ -242,7 +270,7 @@ select
     $$
     select * from posts where id = 5;
     $$,
-    'When audience=blacklist, non blacklisted friends can see the user post'
+    'non blacklisted friends can see the user post'
   );
 
 set local role socnet_user;
@@ -253,7 +281,7 @@ select
     $$
     select * from posts where id = 5;
     $$,
-    'When audience=blacklist, non blacklisted friends can see the user post'
+    'non blacklisted friends can see the user post'
   );
 
 set local role socnet_user;
@@ -264,7 +292,7 @@ select
     $$
     select * from posts where id = 5;
     $$,
-    'When audience=blacklist, blacklisted friends cannnot see the user post'
+    'blacklisted friends cannnot see the user post'
   );
 
 set local role socnet_user;
@@ -275,7 +303,7 @@ select
     $$
     select * from posts where id = 5;
     $$,
-    'When audience=blacklisted, non-friends cannot see the user post'
+    'non-friends cannot see the user post'
   );
 
 select * from finish();

@@ -30,12 +30,8 @@ copy posts (id, creator_id, audience, title, body) from stdin delimiter '|';
 \.
 select setval('posts_id_seq', (select max(id) + 1 from posts), false);
 
-truncate table posts_whitelist cascade;
-copy posts_whitelist (post_id, friendship_id) from stdin delimiter ' ';
-4 1
-\.
-
-truncate table posts_blacklist cascade;
-copy posts_blacklist (post_id, friendship_id) from stdin delimiter ' ';
-5 2
+truncate table posts_list cascade;
+copy posts_list (post_id, friendship_id, list_type) from stdin delimiter ' ';
+4 1 whitelist
+5 2 blacklist
 \.
