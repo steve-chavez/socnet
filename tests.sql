@@ -49,9 +49,12 @@ set local role socnet_user;
 set local "request.jwt.claim.user_id" to 1;
 
 select
-  isnt_empty(
+  results_eq(
     $$
-    select * from posts where id = 1;
+    select title from posts where id = 1;
+    $$,
+    $$
+    values('Excluding Yoko')
     $$,
     'the creator can see its post'
   );
@@ -60,9 +63,12 @@ set local role socnet_user;
 set local "request.jwt.claim.user_id" to 2;
 
 select
-  isnt_empty(
+  results_eq(
     $$
-    select * from posts where id = 1;
+    select title from posts where id = 1;
+    $$,
+    $$
+    values('Excluding Yoko')
     $$,
     'friends can see the post'
   );
@@ -97,9 +103,12 @@ set local role socnet_user;
 set local "request.jwt.claim.user_id" to 1;
 
 select
-  isnt_empty(
+  results_eq(
     $$
-    select * from posts where id = 2;
+    select title from posts where id = 2;
+    $$,
+    $$
+    values('Only for myself')
     $$,
     'only the creator can see its post'
   );
@@ -135,9 +144,12 @@ set local role socnet_anon;
 reset "request.jwt.claim.user_id";
 
 select
-  isnt_empty(
+  results_eq(
     $$
-    select * from posts where id = 3;
+    select title from posts where id = 3;
+    $$,
+    $$
+    values('Hello everybody')
     $$,
     'public can see the user post'
   );
@@ -146,9 +158,12 @@ set local role socnet_user;
 set local "request.jwt.claim.user_id" to 1;
 
 select
-  isnt_empty(
+  results_eq(
     $$
-    select * from posts where id = 3;
+    select title from posts where id = 3;
+    $$,
+    $$
+    values('Hello everybody')
     $$,
     'the creator can see its own post'
   );
@@ -157,9 +172,12 @@ set local role socnet_user;
 set local "request.jwt.claim.user_id" to 2;
 
 select
-  isnt_empty(
+  results_eq(
     $$
-    select * from posts where id = 3;
+    select title from posts where id = 3;
+    $$,
+    $$
+    values('Hello everybody')
     $$,
     'friends can see the user post'
   );
@@ -168,9 +186,12 @@ set local role socnet_user;
 set local "request.jwt.claim.user_id" to 5;
 
 select
-  isnt_empty(
+  results_eq(
     $$
-    select * from posts where id = 3;
+    select title from posts where id = 3;
+    $$,
+    $$
+    values('Hello everybody')
     $$,
     'non-friends can see the user post'
   );
@@ -195,9 +216,12 @@ set local role socnet_user;
 set local "request.jwt.claim.user_id" to 1;
 
 select
-  isnt_empty(
+  results_eq(
     $$
-    select * from posts where id = 4;
+    select title from posts where id = 4;
+    $$,
+    $$
+    values('For some friends')
     $$,
     'the creator can see its own post'
   );
@@ -206,9 +230,12 @@ set local role socnet_user;
 set local "request.jwt.claim.user_id" to 2;
 
 select
-  isnt_empty(
+  results_eq(
     $$
-    select * from posts where id = 4;
+    select title from posts where id = 4;
+    $$,
+    $$
+    values('For some friends')
     $$,
     'some friends can see the user post'
   );
@@ -255,9 +282,12 @@ set local role socnet_user;
 set local "request.jwt.claim.user_id" to 3;
 
 select
-  isnt_empty(
+  results_eq(
     $$
-    select * from posts where id = 5;
+    select title from posts where id = 5;
+    $$,
+    $$
+    values('For all friends except')
     $$,
     'the creator can see its own post'
   );
@@ -266,9 +296,12 @@ set local role socnet_user;
 set local "request.jwt.claim.user_id" to 2;
 
 select
-  isnt_empty(
+  results_eq(
     $$
-    select * from posts where id = 5;
+    select title from posts where id = 5;
+    $$,
+    $$
+    values('For all friends except')
     $$,
     'non blacklisted friends can see the user post'
   );
@@ -277,9 +310,12 @@ set local role socnet_user;
 set local "request.jwt.claim.user_id" to 4;
 
 select
-  isnt_empty(
+  results_eq(
     $$
-    select * from posts where id = 5;
+    select title from posts where id = 5;
+    $$,
+    $$
+    values('For all friends except')
     $$,
     'non blacklisted friends can see the user post'
   );

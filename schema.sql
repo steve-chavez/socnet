@@ -25,30 +25,30 @@ on friendships(
 grant select, insert, update(status, since), delete on friendships to socnet_user;
 
 create type post_audience as enum (
-  'public', 'personal', 'friends', 'whitelist', 'blacklist');
+  'public', 'personal', 'friends', 'friends_whitelist', 'friends_blacklist');
 
 create table posts (
   id          serial         primary key
-, creator_id  int            not null references users(id)
+, creator_id  int            not null     references users(id)
 , title       text           not null
 , body        text           not null
-, creation    date           not null default now()
-, audience    post_audience  not null default 'friends'
+, creation    date           not null     default now()
+, audience    post_audience  not null     default 'friends'
 );
 alter table posts enable row level security;
 grant select, insert, update(title, body, audience), delete on posts to socnet_user;
 grant select on posts to socnet_anon; -- for the case of public posts
 
-create type posts_list_type as enum (
+create type posts_access_type as enum (
   'whitelist', 'blacklist'
 );
 
-create table posts_list (
-  post_id        int              not null references posts(id)
-, friendship_id  int              not null references friendships(id)
-, list_type      posts_list_type  not null
+create table posts_access (
+  post_id        int                not null references posts(id)
+, friendship_id  int                not null references friendships(id)
+, access_type    posts_access_type  not null
 );
-grant select, insert, delete on posts_list to socnet_user;
+grant select, insert, delete on posts_access to socnet_user;
 
 drop policy if exists users_policy on posts;
 create policy users_policy on posts to socnet_user
@@ -72,22 +72,22 @@ using (
           status           = 'accepted'                         and
           posts.creator_id in (source_user_id, target_user_id)
       )
-    when 'whitelist'
+    when 'friends_whitelist'
       then util.jwt_user_id() in (
         select
           case when f.source_user_id = posts.creator_id
             then f.target_user_id
             else f.source_user_id
           end
-        from posts_list wl
+        from posts_access acc
         join friendships f
-          on wl.friendship_id = f.id    and
-             wl.list_type     = 'whitelist'
+          on acc.friendship_id = f.id    and
+             acc.access_type   = 'whitelist'
         where
-          wl.post_id   = posts.id     and
+          acc.post_id  = posts.id     and
           f.status     = 'accepted'
       )
-    when 'blacklist'
+    when 'friends_blacklist'
       then util.jwt_user_id() in (
         select
           case when source_user_id = posts.creator_id
@@ -95,13 +95,13 @@ using (
             else source_user_id
           end
         from friendships f
-        left join posts_list bl
-          on bl.friendship_id = f.id and
-             bl.list_type     = 'blacklist'
+        left join posts_access acc
+          on acc.friendship_id = f.id and
+             acc.access_type   = 'blacklist'
         where
           f.status          =  'accepted'                         and
           posts.creator_id  in  (source_user_id, target_user_id)  and
-          bl.post_id        is  null
+          acc.post_id       is  null
       )
   end
 )

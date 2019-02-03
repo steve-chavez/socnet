@@ -25,13 +25,13 @@ copy posts (id, creator_id, audience, title, body) from stdin delimiter '|';
 1|1|friends|Excluding Yoko|I am tired of Yoko, she always interrupts us when we record.
 2|1|personal|Only for myself|A post for me.
 3|1|public|Hello everybody|A post for everyone.
-4|1|whitelist|For some friends|A post for some friends.
-5|3|blacklist|For all friends except|A post for all except some friends.
+4|1|friends_whitelist|For some friends|A post for some friends.
+5|3|friends_blacklist|For all friends except|A post for all except some friends.
 \.
 select setval('posts_id_seq', (select max(id) + 1 from posts), false);
 
-truncate table posts_list cascade;
-copy posts_list (post_id, friendship_id, list_type) from stdin delimiter ' ';
+truncate table posts_access cascade;
+copy posts_access (post_id, friendship_id, access_type) from stdin delimiter ' ';
 4 1 whitelist
 5 2 blacklist
 \.
