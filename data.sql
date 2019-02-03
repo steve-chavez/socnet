@@ -9,16 +9,15 @@ copy users (id, username) from stdin delimiter ' ';
 select setval('users_id_seq', (select max(id) + 1 from users), false);
 
 truncate table friendships cascade;
-copy friendships (source_user_id, target_user_id, status, id) from stdin delimiter ' ';
-1 2 accepted 1
-1 3 accepted 2
-1 4 accepted 3
-2 3 accepted 4
-2 4 accepted 5
-2 5 accepted 6
-3 4 accepted 7
+copy friendships (source_user_id, target_user_id, status) from stdin delimiter ' ';
+1 2 accepted
+1 3 accepted
+1 4 accepted
+2 3 accepted
+2 4 accepted
+2 5 accepted
+3 4 accepted
 \.
-select setval('friendships_id_seq', (select max(id) + 1 from friendships), false);
 
 truncate table posts cascade;
 copy posts (id, creator_id, audience, title, body) from stdin delimiter '|';
@@ -31,7 +30,7 @@ copy posts (id, creator_id, audience, title, body) from stdin delimiter '|';
 select setval('posts_id_seq', (select max(id) + 1 from posts), false);
 
 truncate table posts_access cascade;
-copy posts_access (post_id, friendship_id, access_type) from stdin delimiter ' ';
-4 1 whitelist
-5 2 blacklist
+copy posts_access (post_id, source_user_id, target_user_id, access_type) from stdin delimiter ' ';
+4 1 2 whitelist
+5 1 3 blacklist
 \.

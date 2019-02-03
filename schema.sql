@@ -7,20 +7,22 @@ create type friendship_status as enum (
   'pending', 'accepted', 'blocked');
 
 create table friendships (
-  id              serial             primary key
-, source_user_id  int                not null references users(id)
+  source_user_id  int                not null references users(id)
 , target_user_id  int                not null references users(id)
 , status          friendship_status  not null
 , since           date               not null default now()
 
-, check (source_user_id <> target_user_id) -- you can't send a friend request to yourself
+, primary key (source_user_id, target_user_id)
+, check       (source_user_id <> target_user_id) -- you can't send a friend request to yourself
 );
+
 -- unique combination, once a friend request is made the target user cannot create a friend request back to the source user
 create unique index unique_friend_request_idx
 on friendships(
-  least(source_user_id, target_user_id),
-  greatest(source_user_id, target_user_id)
+  least(source_user_id, target_user_id)
+, greatest(source_user_id, target_user_id)
 );
+create index target_user_id_idx on friendships(target_user_id);
 
 grant select, insert, update(status, since), delete on friendships to socnet_user;
 
@@ -45,8 +47,11 @@ create type posts_access_type as enum (
 
 create table posts_access (
   post_id        int                not null references posts(id)
-, friendship_id  int                not null references friendships(id)
+, source_user_id int                not null
+, target_user_id int                not null
 , access_type    posts_access_type  not null
+
+, foreign key (source_user_id, target_user_id) references friendships(source_user_id, target_user_id)
 );
 grant select, insert, delete on posts_access to socnet_user;
 
@@ -63,14 +68,14 @@ using (
     when 'friends'
       then util.jwt_user_id() in (
         select
-          case when source_user_id = posts.creator_id
-            then target_user_id
-            else source_user_id
+          case when f.source_user_id = posts.creator_id
+            then f.target_user_id
+            else f.source_user_id
           end
-        from friendships
+        from friendships f
         where
-          status           = 'accepted'                         and
-          posts.creator_id in (source_user_id, target_user_id)
+          posts.creator_id in (f.source_user_id, f.target_user_id)  and
+          status           = 'accepted'
       )
     when 'friends_whitelist'
       then util.jwt_user_id() in (
@@ -80,9 +85,10 @@ using (
             else f.source_user_id
           end
         from posts_access acc
-        join friendships f
-          on acc.friendship_id = f.id    and
-             acc.access_type   = 'whitelist'
+        join friendships f on
+          acc.source_user_id = f.source_user_id  and
+          acc.target_user_id = f.target_user_id  and
+          acc.access_type   = 'whitelist'
         where
           acc.post_id  = posts.id     and
           f.status     = 'accepted'
@@ -90,17 +96,18 @@ using (
     when 'friends_blacklist'
       then util.jwt_user_id() in (
         select
-          case when source_user_id = posts.creator_id
-            then target_user_id
-            else source_user_id
+          case when f.source_user_id = posts.creator_id
+            then f.target_user_id
+            else f.source_user_id
           end
         from friendships f
-        left join posts_access acc
-          on acc.friendship_id = f.id and
-             acc.access_type   = 'blacklist'
+        left join posts_access acc on
+          acc.source_user_id = f.source_user_id  and
+          acc.target_user_id = f.target_user_id  and
+          acc.access_type   = 'blacklist'
         where
-          f.status          =  'accepted'                         and
-          posts.creator_id  in  (source_user_id, target_user_id)  and
+          f.status          =  'accepted'                             and
+          posts.creator_id  in  (f.source_user_id, f.target_user_id)  and
           acc.post_id       is  null
       )
   end
