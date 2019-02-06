@@ -46,11 +46,12 @@ create type posts_access_type as enum (
 );
 
 create table posts_access (
-  post_id        int                not null references posts(id)
+  post_id        int                not null  references posts(id)
 , source_user_id int                not null
 , target_user_id int                not null
 , access_type    posts_access_type  not null
 
+, primary key (post_id, source_user_id, target_user_id, access_type)
 , foreign key (source_user_id, target_user_id) references friendships(source_user_id, target_user_id)
 );
 grant select, insert, delete on posts_access to socnet_user;
@@ -87,11 +88,11 @@ using (
         from posts_access acc
         join friendships f on
           acc.source_user_id = f.source_user_id  and
-          acc.target_user_id = f.target_user_id  and
-          acc.access_type   = 'whitelist'
+          acc.target_user_id = f.target_user_id
         where
-          acc.post_id  = posts.id     and
-          f.status     = 'accepted'
+          acc.post_id     = posts.id    and
+          acc.access_type = 'whitelist' and
+          f.status        = 'accepted'
       )
     when 'friends_blacklist'
       then util.jwt_user_id() in (
@@ -100,15 +101,16 @@ using (
             then f.target_user_id
             else f.source_user_id
           end
-        from friendships f
-        left join posts_access acc on
+        from posts_access acc
+        right join friendships f on
           acc.source_user_id = f.source_user_id  and
           acc.target_user_id = f.target_user_id  and
-          acc.access_type   = 'blacklist'
+          acc.access_type    = 'blacklist'       and
+          acc.post_id        = posts.id
         where
+          acc.post_id       is  null                                  and
           f.status          =  'accepted'                             and
-          posts.creator_id  in  (f.source_user_id, f.target_user_id)  and
-          acc.post_id       is  null
+          posts.creator_id  in  (f.source_user_id, f.target_user_id)
       )
   end
 )
