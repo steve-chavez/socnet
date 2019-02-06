@@ -9,7 +9,7 @@ do $$ begin perform no_plan(); end $$;
 select
   throws_ok(
     $$
-    insert into friendships(source_user_id, target_user_id, status) values ('1', '1', 'pending');
+    insert into friendships(source_user_id, target_user_id, status) values (1, 1, 'pending');
     $$,
     'new row for relation "friendships" violates check constraint "friendships_check"',
     'An user cannot send a friend request to himself'
@@ -18,16 +18,54 @@ select
 select
   throws_ok(
     $$
-    insert into friendships(source_user_id, target_user_id, status) values ('1', '5', 'pending');
-    insert into friendships(source_user_id, target_user_id, status) values ('5', '1', 'pending');
+    insert into friendships(source_user_id, target_user_id, status) values (1, 5, 'pending');
+    insert into friendships(source_user_id, target_user_id, status) values (5, 1, 'pending');
     $$,
     'duplicate key value violates unique constraint "unique_friend_request_idx"',
     'There can only be a friendship between two users'
   );
 
+\echo =======================
+\echo Posts constraints
+\echo =======================
+
+select
+  throws_ok(
+    $$
+    insert into posts_access(post_id, source_user_id, target_user_id, access_type) values (5, 3, 4, 'whitelist');
+    insert into posts_access(post_id, source_user_id, target_user_id, access_type) values (5, 3, 4, 'whitelist');
+    $$,
+    'duplicate key value violates unique constraint "posts_access_pkey"',
+    'There can only be one post whitelist entry for a friend'
+  );
+
+select
+  throws_ok(
+    $$
+    insert into posts_access(post_id, source_user_id, target_user_id, access_type) values (5, 2, 3, 'blacklist');
+    insert into posts_access(post_id, source_user_id, target_user_id, access_type) values (5, 2, 3, 'blacklist');
+    $$,
+    'duplicate key value violates unique constraint "posts_access_pkey"',
+    'There can only be one post blacklist entry for a friend'
+  );
+
 \echo =========
 \echo posts RLS
 \echo =========
+
+set local role socnet_user;
+reset "request.jwt.claim.user_id";
+
+select
+  results_eq(
+    $$
+    select id from posts;
+    $$,
+    $$
+    values(3)
+    $$,
+    'When a socnet_user has no jwt id, it can only see public posts'
+  );
 
 \echo
 \echo When audience=friends
@@ -290,20 +328,6 @@ select
     values('For all friends except')
     $$,
     'the creator can see its own post'
-  );
-
-set local role socnet_user;
-set local "request.jwt.claim.user_id" to 2;
-
-select
-  results_eq(
-    $$
-    select title from posts where id = 5;
-    $$,
-    $$
-    values('For all friends except')
-    $$,
-    'non blacklisted friends can see the user post'
   );
 
 set local role socnet_user;
