@@ -32,8 +32,8 @@ select
 select
   throws_ok(
     $$
-    insert into posts_access(post_id, source_user_id, target_user_id, access_type) values (5, 3, 4, 'whitelist');
-    insert into posts_access(post_id, source_user_id, target_user_id, access_type) values (5, 3, 4, 'whitelist');
+    insert into posts_access(post_id, creator_id, source_user_id, target_user_id, access_type) values (5, 3, 3, 4, 'whitelist');
+    insert into posts_access(post_id, creator_id, source_user_id, target_user_id, access_type) values (5, 3, 3, 4, 'whitelist');
     $$,
     'duplicate key value violates unique constraint "posts_access_pkey"',
     'There can only be one post whitelist entry for a friend'
@@ -42,8 +42,8 @@ select
 select
   throws_ok(
     $$
-    insert into posts_access(post_id, source_user_id, target_user_id, access_type) values (5, 2, 3, 'blacklist');
-    insert into posts_access(post_id, source_user_id, target_user_id, access_type) values (5, 2, 3, 'blacklist');
+    insert into posts_access(post_id, creator_id, source_user_id, target_user_id, access_type) values (5, 3, 2, 3, 'blacklist');
+    insert into posts_access(post_id, creator_id, source_user_id, target_user_id, access_type) values (5, 3, 2, 3, 'blacklist');
     $$,
     'duplicate key value violates unique constraint "posts_access_pkey"',
     'There can only be one post blacklist entry for a friend'

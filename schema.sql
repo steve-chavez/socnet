@@ -26,6 +26,13 @@ create index target_user_id_idx on friendships(target_user_id);
 
 grant select, insert, update(status, since), delete on friendships to socnet_user;
 
+alter table friendships enable row level security;
+drop policy if exists friendships_policy on friendships_policy;
+create policy friendships_policy on friendships to socnet_user -- for now, an user can only see its friendships, not other users friendships
+using(
+  util.jwt_user_id() in (source_user_id, target_user_id)
+);
+
 create type post_audience as enum (
   'public', 'personal', 'friends', 'friends_whitelist', 'friends_blacklist');
 
@@ -47,6 +54,7 @@ create type posts_access_type as enum (
 
 create table posts_access (
   post_id        int                not null  references posts(id)
+, creator_id     int                not null  references users(id)
 , source_user_id int                not null
 , target_user_id int                not null
 , access_type    posts_access_type  not null
@@ -56,8 +64,18 @@ create table posts_access (
 );
 grant select, insert, delete on posts_access to socnet_user;
 
-drop policy if exists users_policy on posts;
-create policy users_policy on posts to socnet_user
+alter table posts_access enable row level security;
+drop policy if exists posts_access_policy on posts_access;
+create policy posts_access_policy on posts_access to socnet_user
+using( -- can see/insert post accesess to posts the user owns and the ones he's been assigned with
+  util.jwt_user_id() in (source_user_id, target_user_id)
+)
+with check( -- can only insert when the post_id belongs to the user
+  util.jwt_user_id() = posts_access.creator_id
+);
+
+drop policy if exists posts_users_policy on posts;
+create policy posts_users_policy on posts to socnet_user
 using (
   util.jwt_user_id() = posts.creator_id -- creator can always see its post
   or
@@ -75,24 +93,19 @@ using (
           end
         from friendships f
         where
-          posts.creator_id in (f.source_user_id, f.target_user_id)  and
-          status           = 'accepted'
+          status = 'accepted'
       )
     when 'friends_whitelist'
       then util.jwt_user_id() in (
         select
-          case when f.source_user_id = posts.creator_id
-            then f.target_user_id
-            else f.source_user_id
+          case when acc.source_user_id = posts.creator_id
+            then acc.target_user_id
+            else acc.source_user_id
           end
         from posts_access acc
-        join friendships f on
-          acc.source_user_id = f.source_user_id  and
-          acc.target_user_id = f.target_user_id
         where
           acc.post_id     = posts.id    and
-          acc.access_type = 'whitelist' and
-          f.status        = 'accepted'
+          acc.access_type = 'whitelist'
       )
     when 'friends_blacklist'
       then util.jwt_user_id() in (
@@ -101,25 +114,30 @@ using (
             then f.target_user_id
             else f.source_user_id
           end
-        from posts_access acc
-        right join friendships f on
-          acc.source_user_id = f.source_user_id  and
-          acc.target_user_id = f.target_user_id  and
-          acc.access_type    = 'blacklist'       and
-          acc.post_id        = posts.id
+        from friendships f
         where
-          acc.post_id       is  null                                  and
-          f.status          =  'accepted'                             and
-          posts.creator_id  in  (f.source_user_id, f.target_user_id)
+          status = 'accepted'
+
+        except
+
+        select
+          case when acc.source_user_id = posts.creator_id
+            then acc.target_user_id
+            else acc.source_user_id
+          end
+        from posts_access acc
+        where
+          acc.post_id     = posts.id    and
+          acc.access_type = 'blacklist'
       )
   end
 )
 with check (
-  util.jwt_user_id() = creator_id
+  util.jwt_user_id() = posts.creator_id
 );
 
-drop policy if exists anons_policy on posts;
-create policy anons_policy on posts to socnet_anon
+drop policy if exists posts_anons_policy on posts;
+create policy posts_anons_policy on posts to socnet_anon
 using (
   posts.audience = 'public'
 )
