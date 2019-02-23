@@ -18,6 +18,7 @@ copy friendships (source_user_id, target_user_id, status) from stdin delimiter '
 2 4 accepted
 2 5 accepted
 3 4 accepted
+2 6 accepted
 \.
 
 truncate table posts cascade;
@@ -27,6 +28,7 @@ copy posts (id, creator_id, audience, title, body) from stdin delimiter '|';
 3|1|public|Hello everybody|A post for everyone.
 4|1|friends_whitelist|For some friends|A post for some friends.
 5|3|friends_blacklist|For all friends except|A post for all except some friends.
+6|6|friends_whitelist|A test for whitelist|Just a test.
 \.
 select setval('posts_id_seq', (select max(id) + 1 from posts), false);
 

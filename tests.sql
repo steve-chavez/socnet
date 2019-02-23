@@ -132,6 +132,50 @@ select
     'an user can only see posts_access which he is a part of'
   );
 
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 2;
+
+select
+  throws_ok(
+    $$
+    insert into posts_access values (6, 6, 2, 6,'whitelist');
+    $$,
+    42501,
+    'new row violates row-level security policy for table "posts_access"',
+    'an user cannot include himself in the whitelist of a post he does not own'
+  );
+
+select
+  throws_ok(
+    $$
+    insert into posts_access values (6, 6, 3, 6,'whitelist');
+    $$,
+    42501,
+    'new row violates row-level security policy for table "posts_access"',
+    'an user cannot include others on a whitelist of a post he does not own'
+  );
+
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 6;
+
+select
+  lives_ok(
+    $$
+    insert into posts_access values (6, 6, 2, 6,'whitelist');
+    $$,
+    'post owner can include friends in the post whitelist'
+  );
+
+select
+  throws_ok(
+    $$
+    insert into posts_access values (6, 6, 4, 6,'whitelist');
+    $$,
+    23503,
+    'insert or update on table "posts_access" violates foreign key constraint "posts_access_source_user_id_fkey"',
+    'post owner cannot include non-friends in the post whitelist'
+  );
+
 \echo =========
 \echo posts RLS
 \echo =========
