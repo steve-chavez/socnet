@@ -48,6 +48,7 @@ create table posts (
 );
 alter table posts enable row level security;
 grant select, insert, update(title, body, audience), delete on posts to socnet_user;
+grant usage on sequence posts_id_seq to socnet_user;
 grant select on posts to socnet_anon; -- for the case of public posts
 
 create type posts_access_type as enum (

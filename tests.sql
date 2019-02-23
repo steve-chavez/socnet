@@ -493,5 +493,36 @@ select
     'non-friends cannot see the user post'
   );
 
+\echo
+\echo Inserts
+\echo =======
+\echo
+
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 1;
+
+select
+  throws_ok(
+    $$
+    insert into posts(creator_id, title, body)
+    values (6, 'Not my post', 'Just a test');
+    $$,
+    42501,
+    'new row violates row-level security policy for table "posts"',
+    'An user cannot create a post in the name of another user'
+  );
+
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 6;
+
+select
+  lives_ok(
+    $$
+    insert into posts(creator_id, title, body)
+    values (6, 'My post', 'Just a test');
+    $$,
+    'Post owner can create a post in its name successfully'
+  );
+
 select * from finish();
 rollback;
