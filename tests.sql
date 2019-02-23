@@ -80,6 +80,27 @@ select
     'an user can only see friendships he is part of'
   );
 
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 1;
+
+select
+  throws_ok(
+    $$
+    insert into friendships(source_user_id, target_user_id, status) values (3, 6, 'pending');
+    $$,
+    42501,
+    'new row violates row-level security policy for table "friendships"',
+    'an user cannot create friendships for other users'
+  );
+
+select
+  lives_ok(
+    $$
+    insert into friendships(source_user_id, target_user_id, status) values (1, 6, 'pending');
+    $$,
+    'an user can create friendships when he is part of that friendship'
+  );
+
 \echo ================
 \echo posts_access rls
 \echo ================

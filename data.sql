@@ -5,6 +5,7 @@ copy users (id, username) from stdin delimiter ' ';
 3 paul
 4 george
 5 yoko
+6 brian
 \.
 select setval('users_id_seq', (select max(id) + 1 from users), false);
 
