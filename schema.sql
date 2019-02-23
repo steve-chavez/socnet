@@ -28,7 +28,9 @@ grant select, insert, update(status, since), delete on friendships to socnet_use
 
 alter table friendships enable row level security;
 drop policy if exists friendships_policy on friendships_policy;
-create policy friendships_policy on friendships to socnet_user -- for now, an user can only see its friendships, not other users friendships
+create policy friendships_policy on friendships to socnet_user
+-- for now, an user can only see its friendships, not other users friendships.
+-- Also, he can only insert friendships he's part of
 using(
   util.jwt_user_id() in (source_user_id, target_user_id)
 );

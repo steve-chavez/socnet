@@ -26,7 +26,7 @@ select
   );
 
 \echo =======================
-\echo Posts constraints
+\echo posts constraints
 \echo =======================
 
 select
@@ -47,6 +47,68 @@ select
     $$,
     'duplicate key value violates unique constraint "posts_access_pkey"',
     'There can only be one post blacklist entry for a friend'
+  );
+
+\echo ===============
+\echo friendships rls
+\echo ===============
+
+set local role socnet_anon;
+reset "request.jwt.claim.user_id";
+
+select
+  throws_ok(
+    $$
+    select * from friendships;
+    $$,
+    42501,
+    'permission denied for relation friendships',
+    'public cannot see any friendships'
+  );
+
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 5;
+
+select
+  results_eq(
+    $$
+    select count(*) as cnt from friendships;
+    $$,
+    $$
+    values(1::bigint)
+    $$,
+    'an user can only see friendships he is part of'
+  );
+
+\echo ================
+\echo posts_access rls
+\echo ================
+
+set local role socnet_anon;
+reset "request.jwt.claim.user_id";
+
+select
+  throws_ok(
+    $$
+    select * from posts_access;
+    $$,
+    42501,
+    'permission denied for relation posts_access',
+    'public cannot see any posts_access'
+  );
+
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 2;
+
+select
+  results_eq(
+    $$
+    select post_id from posts_access;
+    $$,
+    $$
+    values(4)
+    $$,
+    'an user can only see posts_access which he is a part of'
   );
 
 \echo =========
