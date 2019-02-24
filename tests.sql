@@ -2,6 +2,8 @@ begin;
 
 do $$ begin perform no_plan(); end $$;
 
+set search_path = core, public;
+
 \echo =======================
 \echo friendships constraints
 \echo =======================
@@ -72,7 +74,7 @@ set local "request.jwt.claim.user_id" to 5;
 select
   results_eq(
     $$
-    select count(*) as cnt from friendships;
+    select count(1) from friendships;
     $$,
     $$
     values(1::bigint)

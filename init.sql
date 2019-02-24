@@ -1,12 +1,6 @@
 -- create database socnet;
 begin;
 
-drop role if exists socnet_user;
-create role socnet_user;
-
-drop role if exists socnet_anon;
-create role socnet_anon;
-
 create extension if not exists pgtap;
 
 drop schema if exists util cascade;
@@ -19,5 +13,6 @@ $$ language sql stable;
 
 \ir schema.sql
 \ir data.sql
+\ir privileges.sql
 
 commit;
