@@ -27,6 +27,34 @@ select
     'There can only be a friendship between two users'
   );
 
+select
+  throws_ok(
+    $$
+    insert into friendships(source_user_id, target_user_id, status) values (1, 5, 'pending');
+    insert into friendships(source_user_id, target_user_id, status) values (5, 1, 'pending');
+    $$,
+    'duplicate key value violates unique constraint "unique_friend_request_idx"',
+    'There can only be a friendship between two users'
+  );
+
+select
+  throws_ok(
+    $$
+    insert into friendships(source_user_id, target_user_id, status, blocker_id) values (5, 6, 'blocked', null);
+    $$,
+    'new row for relation "friendships" violates check constraint "friendships_check1"',
+    'Cannot block without adding a blocker_id'
+  );
+
+select
+  throws_ok(
+    $$
+    insert into friendships(source_user_id, target_user_id, status, blocker_id) values (5, 6, 'blocked', 1);
+    $$,
+    'new row for relation "friendships" violates check constraint "friendships_check1"',
+    'blocker_id can only be one of the users in the friendship'
+  );
+
 \echo =======================
 \echo posts constraints
 \echo =======================
