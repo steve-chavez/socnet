@@ -79,6 +79,35 @@ select
     'There can only be one post blacklist entry for a friend'
   );
 
+\echo =========
+\echo users rls
+\echo =========
+
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 5;
+
+select
+  is_empty(
+    $$
+    select * from users where id in (4, 6);
+    $$,
+    'cannot see users that blocked you'
+  );
+
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 4;
+
+select
+  results_eq(
+    $$
+    select username from users where id = 5;
+    $$,
+    $$
+    values('yoko')
+    $$,
+    'can see blocked users'
+  );
+
 \echo ===============
 \echo friendships rls
 \echo ===============
@@ -105,7 +134,7 @@ select
     select count(1) from friendships;
     $$,
     $$
-    values(1::bigint)
+    values(3::bigint)
     $$,
     'an user can only see friendships he is part of'
   );

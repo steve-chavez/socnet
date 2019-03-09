@@ -6,13 +6,34 @@ create role socnet_anon;
 
 grant usage on schema core to socnet_user, socnet_anon;
 
+---------
+--users--
+---------
+grant select, update(username) on users to socnet_user;
+
+alter table users enable row level security;
+drop policy if exists users_policy on users;
+create policy users_policy on users to socnet_user
+using(
+  users.id not in (
+    select
+      blocker_id
+    from friendships
+    where
+      status = 'blocked' -- cascades with friendships rls, so it's already filtered by the own user friendships
+  )
+)
+with check(
+  util.jwt_user_id() = users.id
+);
+
 ---------------
 --friendships--
 ---------------
 grant select, insert, update(status, since), delete on friendships to socnet_user;
 
 alter table friendships enable row level security;
-drop policy if exists friendships_policy on friendships_policy;
+drop policy if exists friendships_policy on friendships;
 create policy friendships_policy on friendships to socnet_user
 -- for now, an user can only see its friendships, not other users friendships.
 -- Also, he can only insert friendships he's part of
@@ -34,7 +55,6 @@ using( -- can see/insert post accesess to posts the user owns and the ones he's 
 with check( -- can only insert when the post_id belongs to the user
   util.jwt_user_id() = posts_access.creator_id
 );
-
 
 ---------
 --posts--
