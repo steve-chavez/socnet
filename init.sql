@@ -12,6 +12,7 @@ returns int as $$
 $$ language sql stable;
 
 \ir schema.sql
+\ir functions.sql
 \ir data.sql
 \ir privileges.sql
 

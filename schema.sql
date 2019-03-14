@@ -7,6 +7,17 @@ create table users (
 , username  text    not null
 );
 
+create type details_audience as enum (
+  'public', 'friends', 'friends_of_friends'
+);
+
+create table users_details (
+  id        int               primary key references users(id)
+, email     text              check ( email ~* '^.+@.+\..+$' )
+, phone     text              not null
+, audience  details_audience  not null
+);
+
 create type friendship_status as enum (
   'pending', 'accepted', 'blocked'
 );
