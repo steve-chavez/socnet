@@ -29,7 +29,7 @@ copy friendships (source_user_id, target_user_id, status) from stdin delimiter '
 \.
 copy friendships (source_user_id, target_user_id, status, blocker_id) from stdin delimiter ' ';
 6 5 blocked 6
-4 5 blocked 4
+3 5 blocked 3
 \.
 
 truncate table posts cascade;

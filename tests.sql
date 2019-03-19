@@ -89,13 +89,13 @@ set local "request.jwt.claim.user_id" to 5;
 select
   is_empty(
     $$
-    select * from users where id in (4, 6);
+    select * from users where id in (3, 6);
     $$,
-    'cannot see users that blocked you'
+    'blockee cannot see the users that blocked him'
   );
 
 set local role socnet_user;
-set local "request.jwt.claim.user_id" to 4;
+set local "request.jwt.claim.user_id" to 3;
 
 select
   results_eq(
@@ -105,7 +105,21 @@ select
     $$
     values('yoko')
     $$,
-    'can see blocked users'
+    'blocker can see blocked users'
+  );
+
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 6;
+
+select
+  results_eq(
+    $$
+    select username from users where id = 5;
+    $$,
+    $$
+    values('yoko')
+    $$,
+    'blocker can see blocked users'
   );
 
 \echo =================
@@ -151,8 +165,16 @@ select
     'non-friends cannot see the users details'
   );
 
--- set local role socnet_user;
--- set local "request.jwt.claim.user_id" to 1;
+select
+  results_eq(
+    $$
+    select email, phone from users_details where id = 4;
+    $$,
+    $$
+    select 'george@thebeatles.fake', '917-803-4806'
+    $$,
+    'friends of friends can see the users details'
+  );
 
 \echo ===============
 \echo friendships rls
