@@ -108,6 +108,52 @@ select
     'can see blocked users'
   );
 
+\echo =================
+\echo users_details rls
+\echo =================
+
+set local role socnet_anon;
+reset "request.jwt.claim.user_id";
+
+select
+  results_eq(
+    $$
+    select email, phone from users_details;
+    $$,
+    $$
+    select 'ringo@thebeatles.fake', '408-379-4348'
+    $$,
+    'public can only see public users details'
+  );
+
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 3;
+
+select
+  results_eq(
+    $$
+    select email, phone from users_details where id = 3;
+    $$,
+    $$
+    select 'paul@thebeatles.fake', '586-773-1545'
+    $$,
+    'only friends can see the users details'
+  );
+
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 5;
+
+select
+  is_empty(
+    $$
+    select email, phone from users_details where id = 3;
+    $$,
+    'non-friends cannot see the users details'
+  );
+
+-- set local role socnet_user;
+-- set local "request.jwt.claim.user_id" to 1;
+
 \echo ===============
 \echo friendships rls
 \echo ===============

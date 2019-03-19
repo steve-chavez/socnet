@@ -15,7 +15,7 @@ alter table users enable row level security;
 drop policy if exists users_policy on users;
 create policy users_policy on users to socnet_user
 using(
-  users.id = util.jwt_user_id() -- user can always see its profile
+  util.jwt_user_id() = users.id  -- user can always see its profile
   or
   users.id not in (
     select
@@ -33,6 +33,7 @@ with check(
 --users_details--
 -----------------
 grant select, insert, update(email, phone, audience) on users_details to socnet_user;
+grant select on users_details to socnet_anon;
 
 alter table users_details enable row level security;
 drop policy if exists users_details_policy on users_details;
@@ -63,6 +64,13 @@ using(
 with check(
   util.jwt_user_id() = users_details.id
 );
+
+drop policy if exists users_details_policy_anon on users_details;
+create policy users_details_policy_anon on users_details to socnet_anon
+using (
+  users_details.audience = 'public'
+)
+with check (false);
 
 ---------------
 --friendships--

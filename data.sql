@@ -9,6 +9,13 @@ copy users (id, username) from stdin delimiter ' ';
 \.
 select setval('users_id_seq', (select max(id) + 1 from users), false);
 
+truncate table users_details cascade;
+copy users_details (id, email, phone, audience) from stdin delimiter ' ';
+1 ringo@thebeatles.fake 408-379-4348 public
+3 paul@thebeatles.fake 586-773-1545 friends
+4 george@thebeatles.fake 917-803-4806 friends_of_friends
+\.
+
 truncate table friendships cascade;
 copy friendships (source_user_id, target_user_id, status) from stdin delimiter ' ';
 1 2 accepted
@@ -27,7 +34,7 @@ copy friendships (source_user_id, target_user_id, status, blocker_id) from stdin
 
 truncate table posts cascade;
 copy posts (id, creator_id, audience, title, body) from stdin delimiter '|';
-1|1|friends|Excluding Yoko|I am tired of Yoko, she always interrupts us when we record.
+1|1|friends|Excluding Yoko|Not for Yoko.
 2|1|personal|Only for myself|A post for me.
 3|1|public|Hello everybody|A post for everyone.
 4|1|friends_whitelist|For some friends|A post for some friends.
