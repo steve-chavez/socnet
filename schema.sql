@@ -8,7 +8,8 @@ create table users (
 );
 
 create type details_audience as enum (
-  'public', 'friends', 'friends_of_friends'
+  'public', 'friends', 'friends_of_friends',
+  'friends_whitelist', 'friends_blacklist'
 );
 
 create table users_details (
@@ -42,6 +43,21 @@ on friendships(
 );
 create index target_user_id_idx on friendships(target_user_id);
 
+create type access_list_type as enum (
+  'whitelist', 'blacklist'
+);
+
+create table users_details_access (
+  users_details_id  int                not null  references users_details(id)
+, source_user_id    int                not null
+, target_user_id    int                not null
+, access_type       access_list_type   not null
+
+, primary key            (users_details_id, source_user_id, target_user_id, access_type)
+, foreign key            (source_user_id, target_user_id)
+  references friendships (source_user_id, target_user_id)
+);
+
 create type post_audience as enum (
   'public', 'personal', 'friends',
   'friends_whitelist', 'friends_blacklist'
@@ -56,17 +72,14 @@ create table posts (
 , audience      post_audience  not null     default 'friends'
 );
 
-create type posts_access_type as enum (
-  'whitelist', 'blacklist'
-);
-
 create table posts_access (
   post_id         int                not null  references posts(id)
 , creator_id      int                not null  references users(id)
 , source_user_id  int                not null
 , target_user_id  int                not null
-, access_type     posts_access_type  not null
+, access_type     access_list_type   not null
 
-, primary key (post_id, source_user_id, target_user_id, access_type)
-, foreign key (source_user_id, target_user_id) references friendships(source_user_id, target_user_id)
+, primary key            (post_id, source_user_id, target_user_id, access_type)
+, foreign key            (source_user_id, target_user_id)
+  references friendships (source_user_id, target_user_id)
 );
