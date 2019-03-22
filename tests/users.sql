@@ -221,3 +221,33 @@ select
     $$,
     'non-whitelisted friend cannot see the users details'
   );
+
+\echo
+\echo When audience=friends_blacklist
+\echo ===============================
+\echo
+
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 10;
+
+select
+  is_empty(
+    $$
+    select email, phone from users_details where user_id = 7;
+    $$,
+    'blacklisted friend cannot see the users details'
+  );
+
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 11;
+
+select
+  results_eq(
+    $$
+    select email, phone from users_details where user_id = 7;
+    $$,
+    $$
+    values('dwight@dundermifflin.fake', '954-951-8757')
+    $$,
+    'non-blacklisted friend can see the users details'
+  );
