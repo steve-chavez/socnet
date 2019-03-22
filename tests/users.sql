@@ -110,6 +110,11 @@ select
 \echo users_details rls
 \echo =================
 
+\echo
+\echo When audience=public
+\echo =====================
+\echo
+
 set local role socnet_anon;
 reset "request.jwt.claim.user_id";
 
@@ -124,13 +129,18 @@ select
     'public can only see public users details'
   );
 
+\echo
+\echo When audience=friends
+\echo =====================
+\echo
+
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 3;
 
 select
   results_eq(
     $$
-    select email, phone from users_details where id = 3;
+    select email, phone from users_details where user_id = 3;
     $$,
     $$
     values('paul@thebeatles.fake', '586-773-1545')
@@ -144,15 +154,20 @@ set local "request.jwt.claim.user_id" to 5;
 select
   is_empty(
     $$
-    select email, phone from users_details where id = 3;
+    select email, phone from users_details where user_id = 3;
     $$,
     'non-friends cannot see the users details'
   );
 
+\echo
+\echo When audience=friends of friends
+\echo ================================
+\echo
+
 select
   results_eq(
     $$
-    select email, phone from users_details where id = 4;
+    select email, phone from users_details where user_id = 4;
     $$,
     $$
     values('george@thebeatles.fake', '917-803-4806')

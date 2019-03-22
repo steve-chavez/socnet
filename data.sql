@@ -16,7 +16,7 @@ copy users (id, username) from stdin delimiter ' ';
 select setval('users_id_seq', (select max(id) + 1 from users), false);
 
 truncate table users_details cascade;
-copy users_details (id, email, phone, audience) from stdin delimiter ' ';
+copy users_details (user_id, email, phone, audience) from stdin delimiter ' ';
 1 ringo@thebeatles.fake 408-379-4348 public
 3 paul@thebeatles.fake 586-773-1545 friends
 4 george@thebeatles.fake 917-803-4806 friends_of_friends

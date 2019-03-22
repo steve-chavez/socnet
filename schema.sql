@@ -13,7 +13,7 @@ create type details_audience as enum (
 );
 
 create table users_details (
-  id        int               primary key references users(id)
+  user_id   int               primary key references users(id)
 , email     text              check ( email ~* '^.+@.+\..+$' )
 , phone     text              not null
 , audience  details_audience  not null
@@ -48,7 +48,7 @@ create type access_list_type as enum (
 );
 
 create table users_details_access (
-  users_details_id  int                not null  references users_details(id)
+  users_details_id  int                not null  references users_details(user_id)
 , source_user_id    int                not null
 , target_user_id    int                not null
 , access_type       access_list_type   not null
