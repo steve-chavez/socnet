@@ -164,6 +164,9 @@ select
 \echo ================================
 \echo
 
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 5;
+
 select
   results_eq(
     $$
@@ -173,4 +176,48 @@ select
     values('george@thebeatles.fake', '917-803-4806')
     $$,
     'friends of friends can see the users details'
+  );
+
+\echo
+\echo When audience=friends_whitelist
+\echo ===============================
+\echo
+
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 9;
+
+select
+  results_eq(
+    $$
+    select email, phone from users_details where user_id = 8;
+    $$,
+    $$
+    values('kevin@dundermifflin.fake', '608-864-5863')
+    $$,
+    'whitelisted friend can see the users details'
+  );
+
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 12;
+
+select
+  results_eq(
+    $$
+    select email, phone from users_details where user_id = 8;
+    $$,
+    $$
+    values('kevin@dundermifflin.fake', '608-864-5863')
+    $$,
+    'whitelisted friend can see the users details'
+  );
+
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 11;
+
+select
+  is_empty(
+    $$
+    select email, phone from users_details where user_id = 8;
+    $$,
+    'non-whitelisted friend cannot see the users details'
   );

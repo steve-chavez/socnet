@@ -59,6 +59,18 @@ using(
       then util.jwt_user_id() in (
         select friends_of_friends(users_details.user_id)
       )
+    when 'friends_whitelist'
+      then util.jwt_user_id() in (
+        select
+          case when acc.source_user_id = users_details.user_id
+            then acc.target_user_id
+            else acc.source_user_id
+          end
+        from users_details_access acc
+        where
+          acc.users_details_id = users_details.user_id  and
+          acc.access_type      = 'whitelist'
+      )
   end
 )
 with check(
