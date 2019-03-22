@@ -44,6 +44,8 @@ using(
   case audience
     when 'public'
       then true
+    when 'personal'
+      then util.jwt_user_id() = users_details.user_id
     when 'friends'
       then util.jwt_user_id() in (
         select

@@ -22,6 +22,7 @@ copy users_details (user_id, email, phone, audience) from stdin delimiter ' ';
 4 george@thebeatles.fake 917-803-4806 friends_of_friends
 7 dwight@dundermifflin.fake 954-951-8757 friends_blacklist
 8 kevin@dundermifflin.fake 608-864-5863 friends_whitelist
+9 angela@dundermifflin.fake 408-203-3253 personal
 \.
 
 truncate table friendships cascade;

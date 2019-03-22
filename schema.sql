@@ -8,15 +8,18 @@ create table users (
 );
 
 create type details_audience as enum (
-  'public', 'friends', 'friends_of_friends',
-  'friends_whitelist', 'friends_blacklist'
+  'personal',
+  'friends_whitelist', 'friends_blacklist',
+  'friends',
+  'friends_of_friends',
+  'public'
 );
 
 create table users_details (
   user_id   int               primary key references users(id)
 , email     text              check ( email ~* '^.+@.+\..+$' )
 , phone     text              not null
-, audience  details_audience  not null
+, audience  details_audience  not null  default 'friends'
 );
 
 create type friendship_status as enum (

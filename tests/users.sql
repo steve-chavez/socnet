@@ -251,3 +251,33 @@ select
     $$,
     'non-blacklisted friend can see the users details'
   );
+
+\echo
+\echo When audience=personal
+\echo ======================
+\echo
+
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 9;
+
+select
+  results_eq(
+    $$
+    select email, phone from users_details where user_id = 9;
+    $$,
+    $$
+    values('angela@dundermifflin.fake', '408-203-3253')
+    $$,
+    'only the same user can see its details'
+  );
+
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 7;
+
+select
+  is_empty(
+    $$
+    select email, phone from users_details where user_id = 9;
+    $$,
+    'other users cannot see the user details'
+  );
