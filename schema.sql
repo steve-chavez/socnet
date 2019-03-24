@@ -7,7 +7,7 @@ create table users (
 , username  text    not null
 );
 
-create type details_audience as enum (
+create type audience as enum (
   'personal',
   'friends_whitelist', 'friends_blacklist',
   'friends',
@@ -16,10 +16,10 @@ create type details_audience as enum (
 );
 
 create table users_details (
-  user_id   int               primary key references users(id)
-, email     text              check ( email ~* '^.+@.+\..+$' )
-, phone     text              not null
-, audience  details_audience  not null  default 'friends'
+  user_id   int       primary key references users(id)
+, email     text      check ( email ~* '^.+@.+\..+$' )
+, phone     text      not null
+, audience  audience  not null  default 'friends'
 );
 
 create type friendship_status as enum (
@@ -46,44 +46,36 @@ on friendships(
 );
 create index target_user_id_idx on friendships(target_user_id);
 
-create type access_list_type as enum (
+create type access_type as enum (
   'whitelist', 'blacklist'
 );
 
 create table users_details_access (
-  users_details_id  int                not null  references users_details(user_id)
-, source_user_id    int                not null
-, target_user_id    int                not null
-, access_type       access_list_type   not null
+  users_details_id  int          not null  references users_details(user_id)
+, source_user_id    int          not null
+, target_user_id    int          not null
+, access_type       access_type  not null
 
 , primary key            (users_details_id, source_user_id, target_user_id, access_type)
 , foreign key            (source_user_id, target_user_id)
   references friendships (source_user_id, target_user_id)
 );
 
-create type post_audience as enum (
-  'personal',
-  'friends_whitelist', 'friends_blacklist',
-  'friends',
-  'friends_of_friends',
-  'public'
-);
-
 create table posts (
-  id            serial         primary key
-, creator_id    int            not null     references users(id)
-, title         text           not null
-, body          text           not null
-, publish_date  date           not null     default now()
-, audience      post_audience  not null     default 'friends'
+  id            serial    primary key
+, creator_id    int       not null     references users(id)
+, title         text      not null
+, body          text      not null
+, publish_date  date      not null     default now()
+, audience      audience  not null     default 'friends'
 );
 
 create table posts_access (
-  post_id         int                not null  references posts(id)
-, creator_id      int                not null  references users(id)
-, source_user_id  int                not null
-, target_user_id  int                not null
-, access_type     access_list_type   not null
+  post_id         int          not null  references posts(id)
+, creator_id      int          not null  references users(id)
+, source_user_id  int          not null
+, target_user_id  int          not null
+, access_type     access_type  not null
 
 , primary key            (post_id, source_user_id, target_user_id, access_type)
 , foreign key            (source_user_id, target_user_id)
