@@ -182,6 +182,10 @@ using (
         where
           status = 'accepted'
       )
+    when 'friends_of_friends'
+      then util.jwt_user_id() in (
+        select friends_of_friends(posts.creator_id)
+      )
     when 'friends_whitelist'
       then util.jwt_user_id() in (
         select

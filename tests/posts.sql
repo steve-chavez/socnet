@@ -203,6 +203,50 @@ set local role socnet_anon;
 reset "request.jwt.claim.user_id";
 
 \echo
+\echo When audience=friends of friends
+\echo ================================
+\echo
+
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 5;
+
+select
+  results_eq(
+    $$
+    select title from posts where id = 7;
+    $$,
+    $$
+    values('Hey!')
+    $$,
+    'friends of friends can see the post'
+  );
+
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 2;
+
+select
+  results_eq(
+    $$
+    select title from posts where id = 7;
+    $$,
+    $$
+    values('Hey!')
+    $$,
+    'friends can see the post'
+  );
+
+set local role socnet_anon;
+reset "request.jwt.claim.user_id";
+
+select
+  is_empty(
+    $$
+    select * from posts where id = 7;
+    $$,
+    'public cannot see the post'
+  );
+
+\echo
 \echo When audience=personal
 \echo ======================
 \echo

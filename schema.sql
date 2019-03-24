@@ -62,8 +62,11 @@ create table users_details_access (
 );
 
 create type post_audience as enum (
-  'public', 'personal', 'friends',
-  'friends_whitelist', 'friends_blacklist'
+  'personal',
+  'friends_whitelist', 'friends_blacklist',
+  'friends',
+  'friends_of_friends',
+  'public'
 );
 
 create table posts (
