@@ -5,6 +5,7 @@ set search_path = core, public;
 create table users (
   id        serial  primary key
 , username  text    not null
+, disabled  bool    not null default 'false'
 );
 
 create type audience as enum (

@@ -234,3 +234,49 @@ using (
   posts.audience = 'public'
 )
 with check (false);
+
+-----------------
+--disabled user--
+-----------------
+
+drop policy if exists disabled_policy on users;
+create policy disabled_policy on users
+as restrictive to socnet_user
+using(
+  not is_user_disabled(util.jwt_user_id())
+);
+
+drop policy if exists disabled_policy on users_details;
+create policy disabled_policy on users_details
+as restrictive to socnet_user
+using(
+  not is_user_disabled(util.jwt_user_id())
+);
+
+drop policy if exists disabled_policy on users_details_access;
+create policy disabled_policy on users_details_access
+as restrictive to socnet_user
+using(
+  not is_user_disabled(util.jwt_user_id())
+);
+
+drop policy if exists disabled_policy on friendships;
+create policy disabled_policy on friendships
+as restrictive to socnet_user
+using(
+  not is_user_disabled(util.jwt_user_id())
+);
+
+drop policy if exists disabled_policy on posts_access;
+create policy disabled_policy on posts_access
+as restrictive to socnet_user
+using(
+  not is_user_disabled(util.jwt_user_id())
+);
+
+drop policy if exists disabled_policy on posts;
+create policy disabled_policy on posts
+as restrictive to socnet_user
+using(
+  not is_user_disabled(util.jwt_user_id())
+);

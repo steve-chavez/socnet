@@ -105,20 +105,6 @@ select
 \echo =========
 
 set local role socnet_user;
-reset "request.jwt.claim.user_id";
-
-select
-  results_eq(
-    $$
-    select id from posts;
-    $$,
-    $$
-    values(3)
-    $$,
-    'When a socnet_user has no jwt id, it can only see public posts'
-  );
-
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 1;
 
 select

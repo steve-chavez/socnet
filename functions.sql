@@ -39,3 +39,7 @@ where
   $1 in (source_user_id, target_user_id) and
   status = 'blocked';
 $$ language sql security definer;
+
+create or replace function is_user_disabled(user_id int) returns bool as $$
+  select disabled from users where id = user_id
+$$ language sql security definer;
