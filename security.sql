@@ -6,12 +6,18 @@ create role socnet_anon;
 
 grant usage on schema core to socnet_user, socnet_anon;
 
+alter table  users                 enable row level security;
+alter table  users_details         enable row level security;
+alter table  users_details_access  enable row level security;
+alter table  friendships           enable row level security;
+alter table  posts_access          enable row level security;
+alter table  posts                 enable row level security;
+
 ---------
 --users--
 ---------
 grant select, update(username) on users to socnet_user;
 
-alter table users enable row level security;
 drop policy if exists users_policy on users;
 create policy users_policy on users to socnet_user
 using(
@@ -35,7 +41,6 @@ with check(
 grant select, insert, update(email, phone, audience) on users_details to socnet_user;
 grant select on users_details to socnet_anon;
 
-alter table users_details enable row level security;
 drop policy if exists users_details_policy on users_details;
 create policy users_details_policy on users_details to socnet_user
 using(
@@ -114,7 +119,6 @@ with check (false);
 ------------------------
 grant select, insert, delete on users_details_access to socnet_user;
 
-alter table users_details_access enable row level security;
 drop policy if exists users_details_access_policy on posts_access;
 create policy users_details_access_policy on users_details_access to socnet_user
 using( -- can see/insert accesess to users_details_access the user owns and the ones he's been assigned with
@@ -129,7 +133,6 @@ with check( -- can only insert when the users_details_access belongs to the user
 ---------------
 grant select, insert, update(status, since), delete on friendships to socnet_user;
 
-alter table friendships enable row level security;
 drop policy if exists friendships_policy on friendships;
 create policy friendships_policy on friendships to socnet_user
 -- for now, an user can only see its friendships, not other users friendships.
@@ -143,7 +146,6 @@ using(
 ----------------
 grant select, insert, delete on posts_access to socnet_user;
 
-alter table posts_access enable row level security;
 drop policy if exists posts_access_policy on posts_access;
 create policy posts_access_policy on posts_access to socnet_user
 using( -- can see/insert post accesess to posts the user owns and the ones he's been assigned with
@@ -160,7 +162,6 @@ grant select, insert, update(title, body, audience), delete on posts to socnet_u
 grant usage on sequence posts_id_seq to socnet_user;
 grant select on posts to socnet_anon; -- for the case of public posts
 
-alter table posts enable row level security;
 drop policy if exists posts_users_policy on posts;
 create policy posts_users_policy on posts to socnet_user
 using (
