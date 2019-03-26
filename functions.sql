@@ -43,3 +43,16 @@ $$ language sql security definer;
 create or replace function is_user_disabled(user_id int) returns bool as $$
   select disabled from users where id = user_id
 $$ language sql security definer;
+
+create or replace function blocker_ids(blocked_id int) returns setof int as $$
+  select
+    case when source_user_id = blockee_id
+      then target_user_id
+      else source_user_id
+    end as user_id
+  from friendships
+  where
+    $1 in (source_user_id, target_user_id) and
+    status = 'blocked' and
+    $1 = blockee_id
+$$ language sql security definer;

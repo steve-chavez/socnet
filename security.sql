@@ -24,11 +24,7 @@ using(
   util.jwt_user_id() = users.id  -- user can always see its profile
   or
   users.id not in (
-    select
-      blocker_id
-    from friendships
-    where
-      status = 'blocked' -- cascades with friendships rls, so it's already filtered by the own user friendships
+    select blocker_ids(util.jwt_user_id())
   )
 )
 with check(
@@ -131,14 +127,20 @@ with check( -- can only insert when the users_details_access belongs to the user
 ---------------
 --friendships--
 ---------------
-grant select, insert, update(status, since), delete on friendships to socnet_user;
+grant select, insert, update(status, since, blockee_id), delete on friendships to socnet_user;
 
 drop policy if exists friendships_policy on friendships;
 create policy friendships_policy on friendships to socnet_user
--- for now, an user can only see its friendships, not other users friendships.
--- Also, he can only insert friendships he's part of
+-- for now, an user can only see its friendships(not blocked), not other users friendships.
+-- Also, he can only modify friendships he's part of
 using(
   util.jwt_user_id() in (source_user_id, target_user_id)
+  and
+  case status
+    when 'blocked'
+      then blockee_id is null or util.jwt_user_id() <> blockee_id
+    else true
+  end
 );
 
 ----------------

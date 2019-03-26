@@ -36,19 +36,19 @@ select
 select
   throws_ok(
     $$
-    insert into friendships(source_user_id, target_user_id, status, blocker_id) values (5, 6, 'blocked', null);
+    insert into friendships(source_user_id, target_user_id, status, blockee_id) values (5, 6, 'blocked', null);
     $$,
     'new row for relation "friendships" violates check constraint "friendships_check1"',
-    'Cannot block without adding a blocker_id'
+    'Cannot block without adding a blockee_id'
   );
 
 select
   throws_ok(
     $$
-    insert into friendships(source_user_id, target_user_id, status, blocker_id) values (5, 6, 'blocked', 1);
+    insert into friendships(source_user_id, target_user_id, status, blockee_id) values (5, 6, 'blocked', 1);
     $$,
     'new row for relation "friendships" violates check constraint "friendships_check1"',
-    'blocker_id can only be one of the users in the friendship'
+    'blockee_id can only be one of the users in the friendship'
   );
 
 \echo ===============
@@ -69,7 +69,7 @@ select
   );
 
 set local role socnet_user;
-set local "request.jwt.claim.user_id" to 5;
+set local "request.jwt.claim.user_id" to 1;
 
 select
   results_eq(
@@ -101,4 +101,28 @@ select
     insert into friendships(source_user_id, target_user_id, status) values (1, 6, 'pending');
     $$,
     'an user can create friendships when he is part of that friendship'
+  );
+
+\echo
+\echo Blocked friendships
+\echo ===================
+\echo
+
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 5;
+
+select
+  is_empty(
+    $$
+    select * from friendships where 3 in (source_user_id, target_user_id) or 6 in (source_user_id, target_user_id)
+    $$,
+    'the blockee cannot see blocked friendships'
+  );
+
+select
+  is_empty(
+    $$
+    update friendships set status = 'accepted' where status = 'blocked' returning *
+    $$,
+    'the blockee cannot modify blocked friendships'
   );

@@ -10,7 +10,8 @@ create table users (
 
 create type audience as enum (
   'personal',
-  'friends_whitelist', 'friends_blacklist',
+  'friends_whitelist',
+  'friends_blacklist',
   'friends',
   'friends_of_friends',
   'public'
@@ -31,12 +32,12 @@ create table friendships (
   source_user_id  int                not null references users(id)
 , target_user_id  int                not null references users(id)
 , status          friendship_status  not null
-, blocker_id      int                null     references users(id)
+, blockee_id      int                null     references users(id)
 , since           date               not null default now()
 
 , primary key (source_user_id, target_user_id)
 , check       (source_user_id <> target_user_id) -- you can't send a friend request to yourself
-, check       (not (status = 'blocked' and (blocker_id is null or blocker_id not in (source_user_id, target_user_id)))) -- don't let a block happen when a blocker_id is null or the blocker_id doesn't belong to the friendship
+, check       (not (status = 'blocked' and (blockee_id is null or blockee_id not in (source_user_id, target_user_id)))) -- don't let a block happen when a blockee_id is null or the blockee_id doesn't belong to the friendship
 );
 
 -- unique combination, once a friend request is made the target user cannot create a friend request back to the source user
