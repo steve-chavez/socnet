@@ -1,10 +1,16 @@
-\echo ========================
-\echo posts_access constraints
-\echo ========================
+create or replace function tests.posts_tests() returns setof text as $_$
+begin
+
+------------------------------------
+return next
+diag(
+  $__$ posts_access CONSTRAINTS $__$
+);
+------------------------------------
 
 set local role postgres;
 
-select
+return next
   throws_ok(
     $$
     insert into posts_access(post_id, creator_id, source_user_id, target_user_id, access_type) values (5, 3, 3, 4, 'whitelist');
@@ -14,7 +20,7 @@ select
     'There can only be one post whitelist entry for a friend'
   );
 
-select
+return next
   throws_ok(
     $$
     insert into posts_access(post_id, creator_id, source_user_id, target_user_id, access_type) values (5, 3, 2, 3, 'blacklist');
@@ -24,14 +30,17 @@ select
     'There can only be one post blacklist entry for a friend'
   );
 
-\echo ================
-\echo posts_access rls
-\echo ================
+-----------------------------
+return next
+diag(
+  $__$ posts_access RLS $__$
+);
+-----------------------------
 
 set local role socnet_anon;
 reset "request.jwt.claim.user_id";
 
-select
+return next
   throws_ok(
     $$
     select * from posts_access;
@@ -44,7 +53,7 @@ select
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 2;
 
-select
+return next
   results_eq(
     $$
     select post_id from posts_access;
@@ -58,7 +67,7 @@ select
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 2;
 
-select
+return next
   throws_ok(
     $$
     insert into posts_access values (6, 6, 2, 6,'whitelist');
@@ -68,7 +77,7 @@ select
     'an user cannot include himself in the whitelist of a post he does not own'
   );
 
-select
+return next
   throws_ok(
     $$
     insert into posts_access values (6, 6, 3, 6,'whitelist');
@@ -81,7 +90,7 @@ select
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 6;
 
-select
+return next
   lives_ok(
     $$
     insert into posts_access values (6, 6, 2, 6,'whitelist');
@@ -89,7 +98,7 @@ select
     'post owner can include friends in the post whitelist'
   );
 
-select
+return next
   throws_ok(
     $$
     insert into posts_access values (6, 6, 4, 6,'whitelist');
@@ -99,15 +108,17 @@ select
     'post owner cannot include non-friends in the post whitelist'
   );
 
-
-\echo =========
-\echo posts RLS
-\echo =========
+---------------------
+return next
+diag(
+  $__$ posts RLS $__$
+);
+---------------------
 
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 1;
 
-select
+return next
   throws_ok(
     $$
     insert into posts(creator_id, title, body)
@@ -121,7 +132,7 @@ select
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 6;
 
-select
+return next
   lives_ok(
     $$
     insert into posts(creator_id, title, body)
@@ -130,15 +141,17 @@ select
     'Post owner can create a post in its name successfully'
   );
 
-\echo
-\echo When audience=friends
-\echo =====================
-\echo
+---------------------------------
+return next
+diag(
+  $__$ When audience=friends $__$
+);
+---------------------------------
 
 set local role socnet_anon;
 reset "request.jwt.claim.user_id";
 
-select
+return next
   is_empty(
     $$
     select * from posts where id = 1;
@@ -149,7 +162,7 @@ select
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 1;
 
-select
+return next
   results_eq(
     $$
     select title from posts where id = 1;
@@ -163,7 +176,7 @@ select
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 2;
 
-select
+return next
   results_eq(
     $$
     select title from posts where id = 1;
@@ -177,7 +190,7 @@ select
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 5;
 
-select
+return next
   is_empty(
     $$
     select * from posts where id = 1;
@@ -188,15 +201,17 @@ select
 set local role socnet_anon;
 reset "request.jwt.claim.user_id";
 
-\echo
-\echo When audience=friends of friends
-\echo ================================
-\echo
+--------------------------------------------
+return next
+diag(
+  $__$ When audience=friends of friends $__$
+);
+--------------------------------------------
 
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 5;
 
-select
+return next
   results_eq(
     $$
     select title from posts where id = 7;
@@ -210,7 +225,7 @@ select
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 2;
 
-select
+return next
   results_eq(
     $$
     select title from posts where id = 7;
@@ -224,7 +239,7 @@ select
 set local role socnet_anon;
 reset "request.jwt.claim.user_id";
 
-select
+return next
   is_empty(
     $$
     select * from posts where id = 7;
@@ -232,12 +247,14 @@ select
     'public cannot see the post'
   );
 
-\echo
-\echo When audience=personal
-\echo ======================
-\echo
+----------------------------------
+return next
+diag(
+  $__$ When audience=personal $__$
+);
+----------------------------------
 
-select is_empty(
+return next is_empty(
     $$
     select * from posts where id = 2;
     $$,
@@ -247,7 +264,7 @@ select is_empty(
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 1;
 
-select
+return next
   results_eq(
     $$
     select title from posts where id = 2;
@@ -261,7 +278,7 @@ select
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 2;
 
-select
+return next
   is_empty(
     $$
     select * from posts where id = 2;
@@ -272,7 +289,7 @@ select
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 5;
 
-select
+return next
   is_empty(
     $$
     select * from posts where id = 2;
@@ -280,15 +297,17 @@ select
     'non-friends cannot see the user post'
   );
 
-\echo
-\echo When audience=public
-\echo =====================
-\echo
+---------------------------------
+return next
+diag(
+  $__$ When audience=public $__$
+);
+---------------------------------
 
 set local role socnet_anon;
 reset "request.jwt.claim.user_id";
 
-select
+return next
   results_eq(
     $$
     select title from posts where id = 3;
@@ -302,7 +321,7 @@ select
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 1;
 
-select
+return next
   results_eq(
     $$
     select title from posts where id = 3;
@@ -316,7 +335,7 @@ select
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 2;
 
-select
+return next
   results_eq(
     $$
     select title from posts where id = 3;
@@ -330,7 +349,7 @@ select
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 5;
 
-select
+return next
   results_eq(
     $$
     select title from posts where id = 3;
@@ -341,15 +360,17 @@ select
     'non-friends can see the user post'
   );
 
-\echo
-\echo When audience=whitelist
-\echo =======================
-\echo
+-----------------------------------
+return next
+diag(
+  $__$ When audience=whitelist $__$
+);
+-----------------------------------
 
 set local role socnet_anon;
 reset "request.jwt.claim.user_id";
 
-select
+return next
   is_empty(
     $$
     select * from posts where id = 4;
@@ -360,7 +381,7 @@ select
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 1;
 
-select
+return next
   results_eq(
     $$
     select title from posts where id = 4;
@@ -374,7 +395,7 @@ select
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 2;
 
-select
+return next
   results_eq(
     $$
     select title from posts where id = 4;
@@ -388,7 +409,7 @@ select
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 3;
 
-select
+return next
   is_empty(
     $$
     select * from posts where id = 4;
@@ -399,7 +420,7 @@ select
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 5;
 
-select
+return next
   is_empty(
     $$
     select * from posts where id = 4;
@@ -407,15 +428,17 @@ select
     'non-friends cannot see the user post'
   );
 
-\echo
-\echo When audience=blacklist
-\echo =======================
-\echo
+-----------------------------------
+return next
+diag(
+  $__$ When audience=blacklist $__$
+);
+-----------------------------------
 
 set local role socnet_anon;
 reset "request.jwt.claim.user_id";
 
-select
+return next
   is_empty(
     $$
     select * from posts where id = 5;
@@ -426,7 +449,7 @@ select
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 3;
 
-select
+return next
   results_eq(
     $$
     select title from posts where id = 5;
@@ -440,7 +463,7 @@ select
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 4;
 
-select
+return next
   results_eq(
     $$
     select title from posts where id = 5;
@@ -454,7 +477,7 @@ select
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 1;
 
-select
+return next
   is_empty(
     $$
     select * from posts where id = 5;
@@ -465,7 +488,7 @@ select
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 5;
 
-select
+return next
   is_empty(
     $$
     select * from posts where id = 5;
@@ -473,3 +496,5 @@ select
     'non-friends cannot see the user post'
   );
 
+end;
+$_$ language plpgsql;
