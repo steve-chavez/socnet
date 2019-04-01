@@ -1,10 +1,16 @@
-\echo =======================
-\echo friendships constraints
-\echo =======================
+create or replace function tests.friendships_tests() returns setof text as $_$
+begin
+
+------------------------------------
+return next
+diag(
+  $__$ friendships CONSTRAINTS $__$
+);
+------------------------------------
 
 set local role postgres;
 
-select
+return next
   throws_ok(
     $$
     insert into friendships(source_user_id, target_user_id, status) values (1, 1, 'pending');
@@ -13,7 +19,7 @@ select
     'An user cannot send a friend request to himself'
   );
 
-select
+return next
   throws_ok(
     $$
     insert into friendships(source_user_id, target_user_id, status) values (1, 5, 'pending');
@@ -23,7 +29,7 @@ select
     'There can only be a friendship between two users'
   );
 
-select
+return next
   throws_ok(
     $$
     insert into friendships(source_user_id, target_user_id, status) values (1, 5, 'pending');
@@ -33,7 +39,7 @@ select
     'There can only be a friendship between two users'
   );
 
-select
+return next
   throws_ok(
     $$
     insert into friendships(source_user_id, target_user_id, status, blockee_id) values (5, 6, 'blocked', null);
@@ -42,7 +48,7 @@ select
     'Cannot block without adding a blockee_id'
   );
 
-select
+return next
   throws_ok(
     $$
     insert into friendships(source_user_id, target_user_id, status, blockee_id) values (5, 6, 'blocked', 1);
@@ -51,14 +57,17 @@ select
     'blockee_id can only be one of the users in the friendship'
   );
 
-\echo ===============
-\echo friendships rls
-\echo ===============
+------------------------------------
+return next
+diag(
+  $__$ friendships RLS $__$
+);
+------------------------------------
 
 set local role socnet_anon;
 reset "request.jwt.claim.user_id";
 
-select
+return next
   throws_ok(
     $$
     select * from friendships;
@@ -71,7 +80,7 @@ select
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 1;
 
-select
+return next
   results_eq(
     $$
     select count(1) from friendships;
@@ -85,7 +94,7 @@ select
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 1;
 
-select
+return next
   throws_ok(
     $$
     insert into friendships(source_user_id, target_user_id, status) values (3, 6, 'pending');
@@ -95,7 +104,7 @@ select
     'an user cannot create friendships for other users'
   );
 
-select
+return next
   lives_ok(
     $$
     insert into friendships(source_user_id, target_user_id, status) values (1, 6, 'pending');
@@ -103,15 +112,17 @@ select
     'an user can create friendships when he is part of that friendship'
   );
 
-\echo
-\echo Blocked friendships
-\echo ===================
-\echo
+------------------------------------
+return next
+diag(
+  $__$ blocked friendships $__$
+);
+------------------------------------
 
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 5;
 
-select
+return next
   is_empty(
     $$
     select * from friendships where 3 in (source_user_id, target_user_id) or 6 in (source_user_id, target_user_id)
@@ -119,10 +130,27 @@ select
     'the blockee cannot see blocked friendships'
   );
 
-select
+return next
   is_empty(
     $$
     update friendships set status = 'accepted' where status = 'blocked' returning *
     $$,
     'the blockee cannot modify blocked friendships'
   );
+
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 6;
+
+return next
+  results_eq(
+    $$
+    update friendships set status = 'accepted', blockee_id = null where status = 'blocked' and blockee_id = 5 returning 1
+    $$,
+    $$
+    values(1)
+    $$,
+    'the blocker can update blocked status'
+  );
+
+end;
+$_$ language plpgsql;

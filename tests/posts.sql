@@ -59,7 +59,7 @@ return next
     select post_id from posts_access;
     $$,
     $$
-    values(4)
+    values(3)
     $$,
     'an user can only see posts_access which he is a part of'
   );

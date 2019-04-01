@@ -1,11 +1,17 @@
-\echo =========
-\echo users rls
-\echo =========
+create or replace function tests.users_tests() returns setof text as $_$
+begin
+
+------------------------------------
+return next
+diag(
+  $__$ users RLS $__$
+);
+------------------------------------
 
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 5;
 
-select
+return next
   is_empty(
     $$
     select * from users where id in (3, 6);
@@ -16,7 +22,7 @@ select
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 3;
 
-select
+return next
   results_eq(
     $$
     select username from users where id = 5;
@@ -30,7 +36,7 @@ select
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 6;
 
-select
+return next
   results_eq(
     $$
     select username from users where id = 5;
@@ -41,14 +47,17 @@ select
     'blocker can see blocked users'
   );
 
-\echo ========================
-\echo users_details_access rls
-\echo ========================
+------------------------------------
+return next
+diag(
+  $__$ users_details_access RLS $__$
+);
+------------------------------------
 
 set local role socnet_anon;
 reset "request.jwt.claim.user_id";
 
-select
+return next
   throws_ok(
     $$
     select * from users_details_access;
@@ -61,7 +70,7 @@ select
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 9;
 
-select
+return next
   results_eq(
     $$
     select users_details_id from users_details_access;
@@ -75,7 +84,7 @@ select
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 10;
 
-select
+return next
   throws_ok(
     $$
     insert into users_details_access values (8, 10, 8, 'whitelist');
@@ -85,7 +94,7 @@ select
     'an user cannot include himself in the whitelist of another user details'
   );
 
-select
+return next
   throws_ok(
     $$
     insert into users_details_access values (8, 11, 8, 'whitelist');
@@ -98,7 +107,7 @@ select
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 8;
 
-select
+return next
   lives_ok(
     $$
     insert into users_details_access values (8, 10, 8,'whitelist');
@@ -106,19 +115,24 @@ select
     'user details owner can include friends in the whitelist'
   );
 
-\echo =================
-\echo users_details rls
-\echo =================
+------------------------------------
+return next
+diag(
+  $__$ users_details RLS $__$
+);
+------------------------------------
 
-\echo
-\echo When audience=public
-\echo =====================
-\echo
+------------------------------------
+return next
+diag(
+  $__$ When audience=public $__$
+);
+------------------------------------
 
 set local role socnet_anon;
 reset "request.jwt.claim.user_id";
 
-select
+return next
   results_eq(
     $$
     select email, phone from users_details;
@@ -129,15 +143,17 @@ select
     'public can only see public users details'
   );
 
-\echo
-\echo When audience=friends
-\echo =====================
-\echo
+------------------------------------
+return next
+diag(
+  $__$ When audience=friends $__$
+);
+------------------------------------
 
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 3;
 
-select
+return next
   results_eq(
     $$
     select email, phone from users_details where user_id = 3;
@@ -151,7 +167,7 @@ select
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 5;
 
-select
+return next
   is_empty(
     $$
     select email, phone from users_details where user_id = 3;
@@ -159,15 +175,17 @@ select
     'non-friends cannot see the users details'
   );
 
-\echo
-\echo When audience=friends of friends
-\echo ================================
-\echo
+----------------------------------------------
+return next
+diag(
+  $__$ When audience=friends of friends $__$
+);
+----------------------------------------------
 
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 5;
 
-select
+return next
   results_eq(
     $$
     select email, phone from users_details where user_id = 4;
@@ -178,15 +196,17 @@ select
     'friends of friends can see the users details'
   );
 
-\echo
-\echo When audience=friends_whitelist
-\echo ===============================
-\echo
+----------------------------------------------
+return next
+diag(
+  $__$ When audience=friends_whitelist $__$
+);
+----------------------------------------------
 
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 9;
 
-select
+return next
   results_eq(
     $$
     select email, phone from users_details where user_id = 8;
@@ -200,7 +220,7 @@ select
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 12;
 
-select
+return next
   results_eq(
     $$
     select email, phone from users_details where user_id = 8;
@@ -214,7 +234,7 @@ select
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 7;
 
-select
+return next
   is_empty(
     $$
     select email, phone from users_details where user_id = 8;
@@ -222,15 +242,17 @@ select
     'non-whitelisted friend cannot see the users details'
   );
 
-\echo
-\echo When audience=friends_blacklist
-\echo ===============================
-\echo
+----------------------------------------------
+return next
+diag(
+  $__$ When audience=friends_blacklist $__$
+);
+----------------------------------------------
 
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 10;
 
-select
+return next
   is_empty(
     $$
     select email, phone from users_details where user_id = 7;
@@ -241,7 +263,7 @@ select
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 8;
 
-select
+return next
   results_eq(
     $$
     select email, phone from users_details where user_id = 7;
@@ -252,15 +274,17 @@ select
     'non-blacklisted friend can see the users details'
   );
 
-\echo
-\echo When audience=personal
-\echo ======================
-\echo
+----------------------------------------------
+return next
+diag(
+  $__$ When audience=personal $__$
+);
+----------------------------------------------
 
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 9;
 
-select
+return next
   results_eq(
     $$
     select email, phone from users_details where user_id = 9;
@@ -274,7 +298,7 @@ select
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 7;
 
-select
+return next
   is_empty(
     $$
     select email, phone from users_details where user_id = 9;
@@ -282,14 +306,17 @@ select
     'other users cannot see the user details'
   );
 
-\echo =================
-\echo disabled user rls
-\echo =================
+----------------------------------------------
+return next
+diag(
+  $__$ disabled user RLS $__$
+);
+----------------------------------------------
 
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 11;
 
-select
+return next
   results_eq(
     $$
     select max(count) from(
@@ -312,13 +339,16 @@ select
     'disabled user cannot see anything'
   );
 
-\echo ==================
-\echo no jwt id user rls
-\echo ==================
+----------------------------------------------
+return next
+diag(
+  $__$ no jwt id user rls RLS $__$
+);
+----------------------------------------------
 
 reset "request.jwt.claim.user_id";
 
-select
+return next
   results_eq(
     $$
     select max(count) from(
@@ -340,3 +370,6 @@ select
     $$,
     'When a socnet_user has no jwt id, it cannot see anything'
   );
+
+end;
+$_$ language plpgsql;

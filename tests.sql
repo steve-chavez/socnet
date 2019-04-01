@@ -1,13 +1,15 @@
-begin;
+\set ON_ERROR_ROLLBACK 1
+\set ON_ERROR_STOP true
 
-do $$ begin perform no_plan(); end $$;
+drop schema if exists tests cascade;
+create schema tests;
 
-set search_path = core, public;
+set search_path = tests, core, public;
 
 \ir tests/friendships.sql
-set local role postgres;
-select * from tests.posts_tests();
+\ir tests/posts.sql
 \ir tests/users.sql
 
-select * from finish();
-rollback;
+-- with runtests each function will run in its own transaction
+-- also no_plan() and finish() calls are not needed
+select * from runtests('tests', 'tests$');
