@@ -1,3 +1,8 @@
+begin;
+select no_plan();
+
+set search_path = core, public;
+
 \echo =========
 \echo users rls
 \echo =========
@@ -340,3 +345,9 @@ select
     $$,
     'When a socnet_user has no jwt id, it cannot see anything'
   );
+
+select * from finish();
+
+do $$ begin assert num_failed() = 0; end $$;
+
+rollback;

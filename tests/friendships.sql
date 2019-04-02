@@ -1,3 +1,9 @@
+begin;
+
+select no_plan();
+
+set search_path = core, public;
+
 \echo =======================
 \echo friendships constraints
 \echo =======================
@@ -126,3 +132,23 @@ select
     $$,
     'the blockee cannot modify blocked friendships'
   );
+
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 6;
+
+select
+  results_eq(
+    $$
+    update friendships set status = 'accepted', blockee_id = null where status = 'blocked' and blockee_id = 5 returning 1
+    $$,
+    $$
+    values(1)
+    $$,
+    'the blocker can update blocked status'
+  );
+
+select * from finish();
+
+do $$ begin assert num_failed() = 0; end $$;
+
+rollback;

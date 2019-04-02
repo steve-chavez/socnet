@@ -1,3 +1,9 @@
+begin;
+
+select no_plan();
+
+set search_path = core, public;
+
 \echo ========================
 \echo posts_access constraints
 \echo ========================
@@ -473,3 +479,8 @@ select
     'non-friends cannot see the user post'
   );
 
+select * from finish();
+
+do $$ begin assert num_failed() = 0; end $$;
+
+rollback;
