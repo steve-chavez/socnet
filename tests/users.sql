@@ -111,6 +111,31 @@ select
     'user details owner can include friends in the whitelist'
   );
 
+\echo =========================
+\echo users_details constraints
+\echo =========================
+
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 2;
+
+select
+  throws_ok(
+    $$
+    insert into users_details values (2, 'johnthebeatles.fake', null);
+    $$,
+    'new row for relation "users_details" violates check constraint "users_details_email_check"',
+    'Must insert a valid email'
+  );
+
+select
+  throws_ok(
+    $$
+    insert into users_details values (2, 'john@thebeatles.fake', 'ABC-292-0725');
+    $$,
+    'new row for relation "users_details" violates check constraint "users_details_phone_check"',
+    'Must insert a valid phone'
+  );
+
 \echo =================
 \echo users_details rls
 \echo =================

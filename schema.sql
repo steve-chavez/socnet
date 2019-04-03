@@ -19,10 +19,10 @@ create type audience as enum (
 );
 
 create table users_details (
-  user_id   int       primary key references users(id)
-, email     text      check ( email ~* '^.+@.+\..+$' )
-, phone     text      not null
-, audience  audience  not null  default 'friends'
+  user_id   int       primary key  references users(id)
+, email     text                   check ( email ~* '^.+@.+\..+$' )
+, phone     text                   check ( phone ~* '^\d{3}-\d{3}-\d{4}$')
+, audience  audience  not null     default 'friends'
 );
 
 create type friendship_status as enum (
