@@ -1,3 +1,13 @@
+drop schema if exists util cascade;
+create schema util;
+
+set search_path = util, core, public;
+
+create or replace function jwt_user_id()
+returns int as $$
+  select nullif(current_setting('request.jwt.claim.user_id', true), '')::int;
+$$ language sql stable;
+
 -- Actually gets friends + friends of friends which the user can see(not blocked)
 create or replace function friends_of_friends(user_id int) returns setof int as $$
 with friends as (

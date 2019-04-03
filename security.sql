@@ -24,7 +24,7 @@ using(
   util.jwt_user_id() = users.id  -- user can always see its profile
   or
   users.id not in (
-    select blocker_ids(util.jwt_user_id())
+    select util.blocker_ids(util.jwt_user_id())
   )
 )
 with check(
@@ -60,7 +60,7 @@ using(
       )
     when 'friends_of_friends'
       then util.jwt_user_id() in (
-        select friends_of_friends(users_details.user_id)
+        select util.friends_of_friends(users_details.user_id)
       )
     when 'friends_whitelist'
       then util.jwt_user_id() in (
@@ -187,7 +187,7 @@ using (
       )
     when 'friends_of_friends'
       then util.jwt_user_id() in (
-        select friends_of_friends(posts.creator_id)
+        select util.friends_of_friends(posts.creator_id)
       )
     when 'friends_whitelist'
       then util.jwt_user_id() in (
@@ -245,40 +245,40 @@ drop policy if exists disabled_policy on users;
 create policy disabled_policy on users
 as restrictive to socnet_user
 using(
-  not is_user_disabled(util.jwt_user_id())
+  not util.is_user_disabled(util.jwt_user_id())
 );
 
 drop policy if exists disabled_policy on users_details;
 create policy disabled_policy on users_details
 as restrictive to socnet_user
 using(
-  not is_user_disabled(util.jwt_user_id())
+  not util.is_user_disabled(util.jwt_user_id())
 );
 
 drop policy if exists disabled_policy on users_details_access;
 create policy disabled_policy on users_details_access
 as restrictive to socnet_user
 using(
-  not is_user_disabled(util.jwt_user_id())
+  not util.is_user_disabled(util.jwt_user_id())
 );
 
 drop policy if exists disabled_policy on friendships;
 create policy disabled_policy on friendships
 as restrictive to socnet_user
 using(
-  not is_user_disabled(util.jwt_user_id())
+  not util.is_user_disabled(util.jwt_user_id())
 );
 
 drop policy if exists disabled_policy on posts_access;
 create policy disabled_policy on posts_access
 as restrictive to socnet_user
 using(
-  not is_user_disabled(util.jwt_user_id())
+  not util.is_user_disabled(util.jwt_user_id())
 );
 
 drop policy if exists disabled_policy on posts;
 create policy disabled_policy on posts
 as restrictive to socnet_user
 using(
-  not is_user_disabled(util.jwt_user_id())
+  not util.is_user_disabled(util.jwt_user_id())
 );

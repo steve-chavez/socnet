@@ -1,5 +1,6 @@
 drop schema if exists core cascade;
 create schema core;
+
 set search_path = core, public;
 
 create table users (
