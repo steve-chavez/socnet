@@ -69,6 +69,7 @@ copy posts (id, creator_id, audience, title, body) from stdin delimiter '|';
 5|3|friends_blacklist|For all friends except|A post for all except some friends.
 6|6|friends_whitelist|A test for whitelist|Just a test.
 7|1|friends_of_friends|Hey!|A post for friends of friends.
+8|6|public|Hello|Hello to all except blocked users.
 \.
 select setval('posts_id_seq', (select max(id) + 1 from posts), false);
 

@@ -170,8 +170,10 @@ using (
   util.jwt_user_id() = posts.creator_id -- creator can always see its post
   or
   case audience
-    when 'public'
-      then true
+    when 'public' -- all users can see the posts except the blocked ones
+      then posts.creator_id not in (
+        select util.blocker_ids(util.jwt_user_id())
+      )
     when 'personal'
       then util.jwt_user_id() = posts.creator_id
     when 'friends'

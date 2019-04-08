@@ -347,6 +347,17 @@ select
     'non-friends can see the user post'
   );
 
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 5;
+
+select
+  is_empty(
+    $$
+    select title from posts where id = 8;
+    $$,
+    'blocked user cannot see the public post of a blocker'
+  );
+
 \echo
 \echo When audience=whitelist
 \echo =======================
