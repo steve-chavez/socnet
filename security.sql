@@ -43,8 +43,10 @@ using(
   util.jwt_user_id() = users_details.user_id -- user can always see its details
   or
   case audience
-    when 'public'
-      then true
+    when 'public' -- all users can see the user details except the blocked ones
+      then users_details.user_id not in (
+        select util.blocker_ids(util.jwt_user_id())
+      )
     when 'personal'
       then util.jwt_user_id() = users_details.user_id
     when 'friends'

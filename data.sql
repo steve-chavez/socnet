@@ -23,6 +23,7 @@ copy users_details (user_id, email, phone, audience) from stdin delimiter ' ';
 3 paul@thebeatles.fake 586-773-1545 friends
 4 george@thebeatles.fake 917-803-4806 friends_of_friends
 5 yoko@plasticonoband.fake 571-721-1472 friends
+6 brian@thebeatles.fake 724-689-8787 public
 7 dwight@dundermifflin.fake 954-951-8757 friends_blacklist
 8 kevin@dundermifflin.fake 608-864-5863 friends_whitelist
 9 angela@dundermifflin.fake 408-203-3253 personal

@@ -151,12 +151,25 @@ reset "request.jwt.claim.user_id";
 select
   results_eq(
     $$
-    select email, phone from users_details;
+    select email from users_details;
     $$,
     $$
-    values('ringo@thebeatles.fake', '408-379-4348')
+    values
+      ('ringo@thebeatles.fake'),
+      ('brian@thebeatles.fake')
     $$,
-    'public can only see public users details'
+    'anon can only see public users details'
+  );
+
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 5;
+
+select
+  is_empty(
+    $$
+    select email, phone from users_details where user_id = 6;
+    $$,
+    'blocked user cannot see the public users_details of a blocker'
   );
 
 \echo
