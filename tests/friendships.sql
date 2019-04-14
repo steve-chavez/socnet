@@ -57,6 +57,26 @@ select
     'blockee_id can only be one of the users in the friendship'
   );
 
+select
+  throws_ok(
+    $$
+    update friendships set status = 'pending' where source_user_id = 1 and target_user_id = 2;
+    $$,
+    'P0001',
+    'status cannot go back to pending',
+    'accepted status cannot go back to pending'
+  );
+
+select
+  throws_ok(
+    $$
+    update friendships set status = 'pending' where source_user_id = 6 and target_user_id = 5;
+    $$,
+    'P0001',
+    'status cannot go back to pending',
+    'blocked status cannot go back to pending'
+  );
+
 \echo ===============
 \echo friendships rls
 \echo ===============

@@ -41,6 +41,21 @@ create table friendships (
 , check       (not (status = 'blocked' and (blockee_id is null or blockee_id not in (source_user_id, target_user_id)))) -- don't let a block happen when a blockee_id is null or the blockee_id doesn't belong to the friendship
 );
 
+-- Allowed friendship status transition(all except going back to pending)
+--
+-- pending->accepted<->blocked
+--     |                  |
+--     --------->----------
+create function check_friendship_status() returns trigger as $$
+begin
+  if old.status in ('accepted', 'blocked') and new.status = 'pending' then
+    raise exception 'status cannot go back to pending';
+  end if;
+  return new;
+end; $$ language plpgsql;
+create trigger check_friendship_status before update on friendships
+for each row execute procedure check_friendship_status();
+
 -- unique combination, once a friend request is made the target user cannot create a friend request back to the source user
 create unique index unique_friend_request_idx
 on friendships(
