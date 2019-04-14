@@ -153,6 +153,14 @@ select
     'the blockee cannot modify blocked friendships'
   );
 
+select
+  is_empty(
+    $$
+    delete from friendships where source_user_id in (6,3) and target_user_id = 5 returning *;
+    $$,
+    'the blockee cannot delete blocked friendships'
+  );
+
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 6;
 
