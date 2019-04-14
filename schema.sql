@@ -46,10 +46,16 @@ create table friendships (
 -- pending->accepted<->blocked
 --     |                  |
 --     --------->----------
-create function check_friendship_status() returns trigger as $$
+create or replace function check_friendship_status() returns trigger as $$
 begin
-  if old.status in ('accepted', 'blocked') and new.status = 'pending' then
+  if old.status in ('accepted', 'blocked') and
+     new.status = 'pending' then
     raise exception 'status cannot go back to pending';
+  end if;
+  -- remove blockee_id when unblocking
+  if old.status = ('blocked') and
+     new.status = 'accepted' then
+    new.blockee_id = null;
   end if;
   return new;
 end; $$ language plpgsql;

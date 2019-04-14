@@ -154,7 +154,7 @@ select
   results_eq(
     $$
     update friendships
-    set status = 'accepted', blockee_id = null
+    set status = 'accepted'
     where
       6 in (source_user_id, target_user_id) and
       status = 'blocked' and blockee_id = 5
@@ -164,6 +164,18 @@ select
     values(1)
     $$,
     'the blocker can update blocked status'
+  );
+
+select
+  results_eq(
+    $$
+    select blockee_id from friendships
+    where source_user_id = 6 and target_user_id = 5
+    $$,
+    $$
+    values(null::integer)
+    $$,
+    'the blockee_id was set to null'
   );
 
 select * from finish();
