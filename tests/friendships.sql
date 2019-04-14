@@ -98,20 +98,6 @@ set local role socnet_user;
 set local "request.jwt.claim.user_id" to 1;
 
 select
-  results_eq(
-    $$
-    select count(1) from friendships;
-    $$,
-    $$
-    values(3::bigint)
-    $$,
-    'an user can only see friendships he is part of'
-  );
-
-set local role socnet_user;
-set local "request.jwt.claim.user_id" to 1;
-
-select
   throws_ok(
     $$
     insert into friendships(source_user_id, target_user_id, status) values (3, 6, 'pending');
@@ -140,7 +126,7 @@ set local "request.jwt.claim.user_id" to 5;
 select
   is_empty(
     $$
-    select * from friendships where 3 in (source_user_id, target_user_id) or 6 in (source_user_id, target_user_id)
+    select * from friendships where source_user_id in (3, 6) and target_user_id = 5
     $$,
     'the blockee cannot see blocked friendships'
   );
@@ -167,7 +153,12 @@ set local "request.jwt.claim.user_id" to 6;
 select
   results_eq(
     $$
-    update friendships set status = 'accepted', blockee_id = null where status = 'blocked' and blockee_id = 5 returning 1
+    update friendships
+    set status = 'accepted', blockee_id = null
+    where
+      6 in (source_user_id, target_user_id) and
+      status = 'blocked' and blockee_id = 5
+    returning 1
     $$,
     $$
     values(1)

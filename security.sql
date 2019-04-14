@@ -133,16 +133,16 @@ grant select, insert, update(status, since, blockee_id), delete on friendships t
 
 drop policy if exists friendships_policy on friendships;
 create policy friendships_policy on friendships to socnet_user
--- an user can only see its friendships(not blocked), not other users friendships.
--- Also, he can only modify friendships he's part of
+-- can see all friendships except the blocked ones
 using(
-  util.jwt_user_id() in (source_user_id, target_user_id)
-  and
   case status
     when 'blocked'
       then blockee_id is null or util.jwt_user_id() <> blockee_id
     else true
   end
+)
+with check(
+  util.jwt_user_id() in (source_user_id, target_user_id)
 );
 
 ----------------
