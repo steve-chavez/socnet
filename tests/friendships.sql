@@ -112,7 +112,18 @@ select
     $$
     insert into friendships(source_user_id, target_user_id, status) values (1, 6, 'pending');
     $$,
-    'an user can create friendships when he is part of that friendship'
+    'an user can create friendships he is part of'
+  );
+
+select
+  results_eq(
+    $$
+    delete from friendships where source_user_id = 1 and target_user_id = 4 returning 1;
+    $$,
+    $$
+    values(1)
+    $$,
+    'an user can delete friendships he is part of'
   );
 
 \echo
