@@ -266,6 +266,10 @@ using (
     select 1
     from posts
     where posts.id = comments.post_id)
+  and
+  comments.user_id not in (
+    select util.blocker_ids(util.jwt_user_id())
+  )
 )
 with check (
   util.jwt_user_id() = comments.user_id

@@ -16,7 +16,7 @@ select
     select count(*) from comments where post_id = 3;
     $$,
     $$
-    values(2::bigint)
+    values(3::bigint)
     $$,
     'anon can see the comments of a public post'
   );
@@ -30,6 +30,28 @@ select
     select * from comments where post_id = 1;
     $$,
     'an user cannot see the comments of a post he cannot see'
+  );
+
+select
+  is_empty(
+    $$
+    select * from comments where user_id = 3;
+    $$,
+    'a blockee cannot see the comments of a blocker, even if the post is public'
+  );
+
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 3;
+
+select
+  results_eq(
+    $$
+    select count(*) from comments where user_id = 5;
+    $$,
+    $$
+    values(1::bigint)
+    $$,
+    'a blocker can see the blockee comments'
   );
 
 set local role socnet_user;

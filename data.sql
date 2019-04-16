@@ -86,5 +86,6 @@ copy comments (post_id, user_id, body) from stdin delimiter '|';
 1|3|Second comment!
 3|3|Hey all!
 3|2|Hello!
+3|5|Hi!
 \.
 select setval('comments_id_seq', (select max(id) + 1 from posts), false);
