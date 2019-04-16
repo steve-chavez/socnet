@@ -12,6 +12,7 @@ alter table  users_details_access  enable row level security;
 alter table  friendships           enable row level security;
 alter table  posts_access          enable row level security;
 alter table  posts                 enable row level security;
+alter table  comments              enable row level security;
 
 ---------
 --users--
@@ -240,6 +241,42 @@ using (
   posts.audience = 'public'
 )
 with check (false);
+
+------------
+--comments--
+------------
+
+grant select on comments to socnet_anon; -- for the case of public posts
+grant usage on sequence comments_id_seq to socnet_user;
+grant all on comments to socnet_user;
+
+drop policy if exists anon_comments_policy on comments;
+create policy anon_comments_policy on comments for select to socnet_anon
+using (
+  exists (
+    select 1
+    from posts
+    where posts.id = comments.post_id)
+);
+
+drop policy if exists socnet_user_policy on comments;
+create policy socnet_user_policy on comments to socnet_user
+using (
+  exists (
+    select 1
+    from posts
+    where posts.id = comments.post_id)
+)
+with check (
+  util.jwt_user_id() = comments.user_id
+);
+
+drop policy if exists socnet_user_delete_policy on comments;
+create policy socnet_user_delete_policy on comments
+as restrictive for delete to socnet_user
+using (
+  util.jwt_user_id() = comments.user_id
+);
 
 -----------------
 --disabled user--

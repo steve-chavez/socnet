@@ -105,3 +105,11 @@ create table posts_access (
 , foreign key            (source_user_id, target_user_id)
   references friendships (source_user_id, target_user_id)
 );
+
+create table comments (
+  id            serial    primary key
+, post_id       int       not null     references posts(id)
+, user_id       int       not null     references users(id)
+, body          text      not null
+, comment_date  date      not null     default now()
+);

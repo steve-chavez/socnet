@@ -79,3 +79,12 @@ copy posts_access (post_id, creator_id, source_user_id, target_user_id, access_t
 4 1 1 2 whitelist
 5 3 1 3 blacklist
 \.
+
+truncate table comments cascade;
+copy comments (post_id, user_id, body) from stdin delimiter '|';
+1|2|First comment!
+1|3|Second comment!
+3|3|Hey all!
+3|2|Hello!
+\.
+select setval('comments_id_seq', (select max(id) + 1 from posts), false);
