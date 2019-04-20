@@ -111,6 +111,17 @@ select
     'user details owner can include friends in the whitelist'
   );
 
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 10;
+
+select
+  is_empty(
+    $$
+    delete from users_details_access where users_details_id =7 and 10 in (source_user_id, target_user_id) returning 1;
+    $$,
+    'a blacklisted user cannot remove himself from the blacklist'
+  );
+
 \echo =========================
 \echo users_details constraints
 \echo =========================

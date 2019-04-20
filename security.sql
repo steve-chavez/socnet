@@ -118,12 +118,19 @@ with check (false);
 ------------------------
 grant select, insert, delete on users_details_access to socnet_user;
 
-drop policy if exists users_details_access_policy on posts_access;
+drop policy if exists users_details_access_policy on users_details_access;
 create policy users_details_access_policy on users_details_access to socnet_user
-using( -- can see/insert accesess to users_details_access the user owns and the ones he's been assigned with
+using( -- can see accesess to users_details_access the user owns and the ones he's been assigned with
   util.jwt_user_id() in (source_user_id, target_user_id)
 )
 with check( -- can only insert when the users_details_access belongs to the user
+  util.jwt_user_id() = users_details_access.users_details_id
+);
+
+drop policy if exists users_details_access_delete_policy on users_details_access;
+create policy users_details_access_delete_policy
+on users_details_access as restrictive for delete to socnet_user
+using(
   util.jwt_user_id() = users_details_access.users_details_id
 );
 
@@ -153,7 +160,7 @@ grant select, insert, delete on posts_access to socnet_user;
 
 drop policy if exists posts_access_policy on posts_access;
 create policy posts_access_policy on posts_access to socnet_user
-using( -- can see/insert post accesess to posts the user owns and the ones he's been assigned with
+using( -- can see post accesess to posts the user owns and the ones he's been assigned with
   util.jwt_user_id() in (source_user_id, target_user_id)
 )
 with check( -- can only insert when the post_id belongs to the user
