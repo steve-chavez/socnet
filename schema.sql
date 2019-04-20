@@ -75,7 +75,7 @@ create type access_type as enum (
 );
 
 create table users_details_access (
-  users_details_id  int          not null  references users_details(user_id)
+  users_details_id  int          not null  references users_details(user_id)  on delete cascade
 , source_user_id    int          not null
 , target_user_id    int          not null
 , access_type       access_type  not null
@@ -83,6 +83,7 @@ create table users_details_access (
 , primary key            (users_details_id, source_user_id, target_user_id, access_type)
 , foreign key            (source_user_id, target_user_id)
   references friendships (source_user_id, target_user_id)
+  on delete cascade
 );
 
 create table posts (
@@ -95,7 +96,7 @@ create table posts (
 );
 
 create table posts_access (
-  post_id         int          not null  references posts(id)
+  post_id         int          not null  references posts(id)  on delete cascade
 , creator_id      int          not null  references users(id)
 , source_user_id  int          not null
 , target_user_id  int          not null
@@ -104,6 +105,7 @@ create table posts_access (
 , primary key            (post_id, source_user_id, target_user_id, access_type)
 , foreign key            (source_user_id, target_user_id)
   references friendships (source_user_id, target_user_id)
+  on delete cascade
 );
 
 create table comments (
