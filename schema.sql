@@ -108,7 +108,7 @@ create table posts_access (
 
 create table comments (
   id            serial    primary key
-, post_id       int       not null     references posts(id)
+, post_id       int       not null     references posts(id)  on delete cascade
 , user_id       int       not null     references users(id)
 , body          text      not null
 , comment_date  date      not null     default now()

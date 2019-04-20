@@ -116,6 +116,17 @@ select
     'blacklisted user cannot delete himself from the blacklist'
   );
 
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 6;
+
+select
+  is_empty(
+    $$
+    delete from posts where id in (3, 7) returning 1;
+    $$,
+    'user cannot delete posts that belong to other users'
+  );
+
 \echo =========
 \echo posts RLS
 \echo =========

@@ -256,6 +256,13 @@ with check (
   util.jwt_user_id() = posts.creator_id
 );
 
+drop policy if exists delete_policy on posts;
+create policy delete_policy on posts
+as restrictive for delete to socnet_user
+using(
+  util.jwt_user_id() = posts.creator_id
+);
+
 drop policy if exists posts_anons_policy on posts;
 create policy posts_anons_policy on posts to socnet_anon
 using (
