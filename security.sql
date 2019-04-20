@@ -153,6 +153,13 @@ with check(
   util.jwt_user_id() in (source_user_id, target_user_id)
 );
 
+drop policy if exists delete_policy on friendships;
+create policy delete_policy on friendships
+as restrictive for delete to socnet_user
+using(
+  util.jwt_user_id() in (source_user_id, target_user_id)
+);
+
 ----------------
 --posts_access--
 ----------------

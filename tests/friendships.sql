@@ -126,6 +126,14 @@ select
     'an user can delete friendships he is part of'
   );
 
+select
+  is_empty(
+    $$
+    delete from friendships where source_user_id = 2 and target_user_id = 5 returning 1;
+    $$,
+    'an user cannot delete friendships he is not a part of'
+  );
+
 \echo
 \echo Blocked friendships
 \echo ===================
