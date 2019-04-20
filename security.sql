@@ -174,6 +174,13 @@ with check( -- can only insert when the post_id belongs to the user
   util.jwt_user_id() = posts_access.creator_id
 );
 
+drop policy if exists delete_policy on posts_access;
+create policy delete_policy on posts_access
+as restrictive for delete to socnet_user
+using(
+  util.jwt_user_id() = posts_access.creator_id
+);
+
 ---------
 --posts--
 ---------

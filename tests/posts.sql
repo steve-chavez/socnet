@@ -105,6 +105,16 @@ select
     'post owner cannot include non-friends in the post whitelist'
   );
 
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 1;
+
+select
+  is_empty(
+    $$
+    delete from posts_access where post_id = 5 and 1 in (source_user_id, target_user_id) returning 1;
+    $$,
+    'blacklisted user cannot delete himself from the blacklist'
+  );
 
 \echo =========
 \echo posts RLS
