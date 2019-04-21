@@ -336,65 +336,6 @@ select
     'other users cannot see the user details'
   );
 
-\echo =================
-\echo disabled user rls
-\echo =================
-
-set local role socnet_user;
-set local "request.jwt.claim.user_id" to 11;
-
-select
-  results_eq(
-    $$
-    select max(count) from(
-      select count(*) from users
-      union
-      select count(*) from users_details
-      union
-      select count(*) from users_details_access
-      union
-      select count(*) from friendships
-      union
-      select count(*) from posts_access
-      union
-      select count(*) from posts
-    ) _
-    $$,
-    $$
-    values(0::bigint)
-    $$,
-    'disabled user cannot see anything'
-  );
-
-\echo ==================
-\echo no jwt id user rls
-\echo ==================
-
-reset "request.jwt.claim.user_id";
-
-select
-  results_eq(
-    $$
-    select max(count) from(
-      select count(*) from users
-      union
-      select count(*) from users_details
-      union
-      select count(*) from users_details_access
-      union
-      select count(*) from friendships
-      union
-      select count(*) from posts_access
-      union
-      select count(*) from posts
-    ) _
-    $$,
-    $$
-    values(0::bigint)
-    $$,
-    'When a socnet_user has no jwt id, it cannot see anything'
-  );
-
 select * from finish();
 
 do $$ begin assert num_failed() = 0; end $$;
