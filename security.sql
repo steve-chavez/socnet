@@ -17,29 +17,46 @@ alter table  comments              enable row level security;
 ---------
 --users--
 ---------
-grant select, update(username) on users to socnet_user;
+grant
+  select,
+  update(username)
+on users
+to socnet_user;
 
-drop policy if exists users_policy on users;
-create policy users_policy on users to socnet_user
+create policy select_policy
+on users
+for select
+to socnet_user
 using(
   util.jwt_user_id() = users.id  -- user can always see its profile
   or
   users.id not in (
     select util.blocker_ids(util.jwt_user_id())
   )
-)
-with check(
+);
+
+create policy update_policy
+on users
+for update
+to socnet_user
+using (
   util.jwt_user_id() = users.id
 );
 
 -----------------
 --users_details--
 -----------------
-grant select, insert, update(email, phone, audience) on users_details to socnet_user;
-grant select on users_details to socnet_anon;
+grant
+  select,
+  insert,
+  update(email, phone, audience)
+on users_details
+to socnet_user;
 
-drop policy if exists users_details_policy on users_details;
-create policy users_details_policy on users_details to socnet_user
+create policy select_policy
+on users_details
+for select
+to socnet_user
 using(
   util.jwt_user_id() = users_details.user_id -- user can always see its details
   or
@@ -101,35 +118,67 @@ using(
           acc.access_type      = 'blacklist'
       )
   end
-)
-with check(
+);
+
+create policy insert_policy
+on users_details
+for insert
+to socnet_user
+with check (
   util.jwt_user_id() = users_details.user_id
 );
 
-drop policy if exists users_details_policy_anon on users_details;
-create policy users_details_policy_anon on users_details to socnet_anon
+create policy update_policy
+on users_details
+for update
+to socnet_user
+using (
+  util.jwt_user_id() = users_details.user_id
+);
+
+grant
+  select
+on users_details
+to socnet_anon;
+
+create policy anon_select_policy
+on users_details
+for select
+to socnet_anon
 using (
   users_details.audience = 'public'
-)
-with check (false);
+);
 
 ------------------------
 --users_details_access--
 ------------------------
-grant select, insert, delete on users_details_access to socnet_user;
+grant
+  select,
+  insert,
+  delete
+on users_details_access
+to socnet_user;
 
-drop policy if exists users_details_access_policy on users_details_access;
-create policy users_details_access_policy on users_details_access to socnet_user
+create policy select_policy
+on users_details_access
+for select
+to socnet_user
 using( -- can see accesess to users_details_access the user owns and the ones he's been assigned with
   util.jwt_user_id() in (source_user_id, target_user_id)
-)
+);
+
+create policy insert_policy
+on users_details_access
+for insert
+to socnet_user
 with check( -- can only insert when the users_details_access belongs to the user
   util.jwt_user_id() = users_details_access.users_details_id
 );
 
-drop policy if exists users_details_access_delete_policy on users_details_access;
-create policy users_details_access_delete_policy
-on users_details_access as restrictive for delete to socnet_user
+create policy delete_policy
+on users_details_access
+for delete
+to socnet_user
 using(
   util.jwt_user_id() = users_details_access.users_details_id
 );
@@ -137,10 +186,17 @@ using(
 ---------------
 --friendships--
 ---------------
-grant select, insert, update(status, since, blockee_id), delete on friendships to socnet_user;
+grant
+  select,
+  insert,
+  update(status, since, blockee_id),
+  delete
+on friendships to socnet_user;
 
-drop policy if exists friendships_policy on friendships;
-create policy friendships_policy on friendships to socnet_user
+create policy select_policy
+on friendships
+for select
+to socnet_user
 -- can see all friendships except the blocked ones
 using(
   case status
@@ -148,14 +204,28 @@ using(
       then blockee_id is null or util.jwt_user_id() <> blockee_id
     else true
   end
-)
+);
+
+create policy insert_policy
+on friendships
+for insert
+to socnet_user
 with check(
   util.jwt_user_id() in (source_user_id, target_user_id)
 );
 
-drop policy if exists delete_policy on friendships;
-create policy delete_policy on friendships
-as restrictive for delete to socnet_user
+create policy update_policy
+on friendships
+for update
+to socnet_user
+using(
+  util.jwt_user_id() in (source_user_id, target_user_id)
+);
+
+create policy delete_policy
+on friendships
+for delete
+to socnet_user
 using(
   util.jwt_user_id() in (source_user_id, target_user_id)
 );
@@ -163,20 +233,33 @@ using(
 ----------------
 --posts_access--
 ----------------
-grant select, insert, delete on posts_access to socnet_user;
+grant
+  select,
+  insert,
+  delete
+on posts_access
+to socnet_user;
 
-drop policy if exists posts_access_policy on posts_access;
-create policy posts_access_policy on posts_access to socnet_user
+create policy select_policy
+on posts_access
+for select
+to socnet_user
 using( -- can see post accesess to posts the user owns and the ones he's been assigned with
   util.jwt_user_id() in (source_user_id, target_user_id)
-)
+);
+
+create policy insert_policy
+on posts_access
+for insert
+to socnet_user
 with check( -- can only insert when the post_id belongs to the user
   util.jwt_user_id() = posts_access.creator_id
 );
 
-drop policy if exists delete_policy on posts_access;
-create policy delete_policy on posts_access
-as restrictive for delete to socnet_user
+create policy delete_policy
+on posts_access
+for delete
+to socnet_user
 using(
   util.jwt_user_id() = posts_access.creator_id
 );
@@ -184,12 +267,20 @@ using(
 ---------
 --posts--
 ---------
-grant select, insert, update(title, body, audience), delete on posts to socnet_user;
 grant usage on sequence posts_id_seq to socnet_user;
-grant select on posts to socnet_anon; -- for the case of public posts
 
-drop policy if exists posts_users_policy on posts;
-create policy posts_users_policy on posts to socnet_user
+grant
+  select,
+  insert,
+  update(title, body, audience),
+  delete
+on posts
+to socnet_user;
+
+create policy select_policy
+on posts
+for select
+to socnet_user
 using (
   util.jwt_user_id() = posts.creator_id -- creator can always see its post
   or
@@ -251,44 +342,59 @@ using (
           acc.access_type = 'blacklist'
       )
   end
-)
+);
+
+create policy insert_policy
+on posts
+for insert
+to socnet_user
 with check (
   util.jwt_user_id() = posts.creator_id
 );
 
-drop policy if exists delete_policy on posts;
-create policy delete_policy on posts
-as restrictive for delete to socnet_user
+create policy update_policy
+on posts
+for update
+to socnet_user
+using (
+  util.jwt_user_id() = posts.creator_id
+);
+
+create policy delete_policy
+on posts
+for delete
+to socnet_user
 using(
   util.jwt_user_id() = posts.creator_id
 );
 
-drop policy if exists posts_anons_policy on posts;
-create policy posts_anons_policy on posts to socnet_anon
+grant select on posts to socnet_anon; -- for the case of public posts
+
+create policy anon_select_policy
+on posts
+for select
+to socnet_anon
 using (
   posts.audience = 'public'
-)
-with check (false);
+);
 
 ------------
 --comments--
 ------------
-
-grant select on comments to socnet_anon; -- for the case of public posts
 grant usage on sequence comments_id_seq to socnet_user;
-grant all on comments to socnet_user;
 
-drop policy if exists anon_comments_policy on comments;
-create policy anon_comments_policy on comments for select to socnet_anon
-using (
-  exists (
-    select 1
-    from posts
-    where posts.id = comments.post_id)
-);
+grant
+  select,
+  insert,
+  update(body),
+  delete
+on comments
+to socnet_user;
 
-drop policy if exists socnet_user_policy on comments;
-create policy socnet_user_policy on comments to socnet_user
+create policy select_policy
+on comments
+for select
+to socnet_user
 using (
   exists (
     select 1
@@ -298,14 +404,41 @@ using (
   comments.user_id not in (
     select util.blocker_ids(util.jwt_user_id())
   )
-)
+);
+
+create policy insert_policy
+on comments
+for insert
+to socnet_user
 with check (
   util.jwt_user_id() = comments.user_id
 );
 
-drop policy if exists socnet_user_delete_policy on comments;
-create policy socnet_user_delete_policy on comments
-as restrictive for delete to socnet_user
+create policy update_policy
+on comments
+for update
+to socnet_user
 using (
   util.jwt_user_id() = comments.user_id
+);
+
+create policy delete_policy
+on comments
+for delete
+to socnet_user
+using (
+  util.jwt_user_id() = comments.user_id
+);
+
+grant select on comments to socnet_anon; -- for the case of public posts
+
+create policy anon_select_policy
+on comments
+for select
+to socnet_anon
+using (
+  exists (
+    select 1
+    from posts
+    where posts.id = comments.post_id)
 );

@@ -78,20 +78,23 @@ select
   );
 
 select
-  lives_ok(
+  results_eq(
     $$
-    update comments set body = 'First comment! Edited!' where id = 1;
+    update comments set body = 'First comment! Edited!' where id = 1
+    returning body;
+    $$,
+    $$
+    values('First comment! Edited!')
     $$,
     'an user can update a comment he owns'
   );
 
 select
-  throws_ok(
+  is_empty(
     $$
-    update comments set body = 'Second comment! Edited!' where id = 2;
+    update comments set body = 'Second comment! Edited!' where id = 2
+    returning body;
     $$,
-    '42501',
-    'new row violates row-level security policy for table "comments"',
     'an user cannot update other user comment'
   );
 
