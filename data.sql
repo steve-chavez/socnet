@@ -12,6 +12,7 @@ copy users (id, username) from stdin delimiter ' ';
 10 jim
 11 michael
 12 pam
+13 stanley
 \.
 select setval('users_id_seq', (select max(id) + 1 from users), false);
 
@@ -25,6 +26,7 @@ copy users_details (user_id, email, phone, audience) from stdin delimiter ' ';
 7 dwight@dundermifflin.fake 954-951-8757 friends_blacklist
 8 kevin@dundermifflin.fake 608-864-5863 friends_whitelist
 9 angela@dundermifflin.fake 408-203-3253 personal
+13 stanley@dundermifflin.fake 972-407-1401 friends_of_friends
 \.
 
 truncate table friendships cascade;
@@ -46,10 +48,12 @@ copy friendships (source_user_id, target_user_id, status) from stdin delimiter '
 10 8 accepted
 11 8 accepted
 8 12 accepted
+13 8 accepted
 \.
 copy friendships (source_user_id, target_user_id, status, blockee_id) from stdin delimiter ' ';
 6 5 blocked 5
 3 5 blocked 5
+13 11 blocked 11
 \.
 
 truncate table users_details_access cascade;
@@ -69,6 +73,7 @@ copy posts (id, creator_id, audience, title, body) from stdin delimiter '|';
 6|6|friends_whitelist|A test for whitelist|Just a test.
 7|1|friends_of_friends|Hey!|A post for friends of friends.
 8|6|public|Hello|Hello to all except blocked users.
+9|13|friends_of_friends|Howdy|Getting tired of this job.
 \.
 select setval('posts_id_seq', (select max(id) + 1 from posts), false);
 

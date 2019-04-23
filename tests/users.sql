@@ -232,6 +232,32 @@ select
     'friends of friends can see the users details'
   );
 
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 7;
+
+select
+  results_eq(
+    $$
+    select email, phone from users_details where user_id = 13;
+    $$,
+    $$
+    values('stanley@dundermifflin.fake'::citext, '972-407-1401')
+    $$,
+    'friends of friends can see the users details'
+  );
+
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 11;
+
+select
+  is_empty(
+    $$
+    select email, phone from users_details where user_id = 13;
+    $$,
+    'friends of friends which are blocked cannot see the users details'
+  );
+
+
 \echo
 \echo When audience=friends_whitelist
 \echo ===============================

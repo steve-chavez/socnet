@@ -22,14 +22,12 @@ on users_details
 as restrictive
 for select
 to socnet_user
+-- could be ignored for friends and friends_blacklist
+-- since they are already filtered by accepted friendships
 using(
-  case audience
-    when 'public'
-      then users_details.user_id not in (
-        select util.blocker_ids(util.jwt_user_id())
-      )
-    else true
-  end
+  users_details.user_id not in (
+    select util.blocker_ids(util.jwt_user_id())
+  )
 );
 
 ---------------
@@ -59,14 +57,12 @@ on posts
 as restrictive
 for select
 to socnet_user
+-- could be ignored for friends and friends_blacklist
+-- since they are already filtered by accepted friendships
 using(
-  case audience
-    when 'public'
-      then posts.creator_id not in (
-        select util.blocker_ids(util.jwt_user_id())
-      )
-    else true
-  end
+  posts.creator_id not in (
+    select util.blocker_ids(util.jwt_user_id())
+  )
 );
 
 ------------

@@ -259,6 +259,17 @@ select
     'public cannot see the post'
   );
 
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 11;
+
+select
+  is_empty(
+    $$
+    select title from posts where id = 9;
+    $$,
+    'blocked friends of friends cannot see the post'
+  );
+
 \echo
 \echo When audience=personal
 \echo ======================
