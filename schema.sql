@@ -5,7 +5,7 @@ set search_path = core, public;
 
 create table users (
   id        serial  primary key
-, username  text    not null
+, username  text    not null     unique
 );
 
 create type audience as enum (
@@ -19,7 +19,7 @@ create type audience as enum (
 
 create table users_details (
   user_id   int       primary key  references users(id)
-, email     text                   check ( email ~* '^.+@.+\..+$' )
+, email     citext                 check ( email ~* '^.+@.+\..+$' )
 , phone     text                   check ( phone ~* '^\d{3}-\d{3}-\d{4}$')
 , audience  audience  not null     default 'friends'
 );
@@ -36,11 +36,13 @@ create table friendships (
 , since           date               not null default now()
 
 , primary key (source_user_id, target_user_id)
-, check       (source_user_id <> target_user_id) -- you can't send a friend request to yourself
-, check       (not (status = 'blocked' and (blockee_id is null or blockee_id not in (source_user_id, target_user_id)))) -- don't let a block happen when a blockee_id is null or the blockee_id doesn't belong to the friendship
+-- you can't send a friend request to yourself
+, check       (source_user_id <> target_user_id)
+-- don't let a block happen when a blockee_id is null or the blockee_id doesn't belong to the friendship
+, check       (not (status = 'blocked' and (blockee_id is null or blockee_id not in (source_user_id, target_user_id))))
 );
 
--- Allowed friendship status transition(all except going back to pending)
+-- Allowed friendship status transition(all allowed except going back to pending)
 --
 -- pending->accepted<->blocked
 --     |                  |

@@ -166,8 +166,8 @@ select
     $$,
     $$
     values
-      ('ringo@thebeatles.fake'),
-      ('brian@thebeatles.fake')
+      ('ringo@thebeatles.fake'::citext),
+      ('brian@thebeatles.fake'::citext)
     $$,
     'anon can only see public users details'
   );
@@ -197,7 +197,7 @@ select
     select email, phone from users_details where user_id = 3;
     $$,
     $$
-    values('paul@thebeatles.fake', '586-773-1545')
+    values('paul@thebeatles.fake'::citext, '586-773-1545')
     $$,
     'friends can see the users details'
   );
@@ -227,7 +227,7 @@ select
     select email, phone from users_details where user_id = 4;
     $$,
     $$
-    values('george@thebeatles.fake', '917-803-4806')
+    values('george@thebeatles.fake'::citext, '917-803-4806')
     $$,
     'friends of friends can see the users details'
   );
@@ -246,7 +246,7 @@ select
     select email, phone from users_details where user_id = 8;
     $$,
     $$
-    values('kevin@dundermifflin.fake', '608-864-5863')
+    values('kevin@dundermifflin.fake'::citext, '608-864-5863')
     $$,
     'whitelisted friend can see the users details'
   );
@@ -260,7 +260,7 @@ select
     select email, phone from users_details where user_id = 8;
     $$,
     $$
-    values('kevin@dundermifflin.fake', '608-864-5863')
+    values('kevin@dundermifflin.fake'::citext, '608-864-5863')
     $$,
     'whitelisted friend can see the users details'
   );
@@ -301,7 +301,7 @@ select
     select email, phone from users_details where user_id = 7;
     $$,
     $$
-    values('dwight@dundermifflin.fake', '954-951-8757')
+    values('dwight@dundermifflin.fake'::citext, '954-951-8757')
     $$,
     'non-blacklisted friend can see the users details'
   );
@@ -320,7 +320,7 @@ select
     select email, phone from users_details where user_id = 9;
     $$,
     $$
-    values('angela@dundermifflin.fake', '408-203-3253')
+    values('angela@dundermifflin.fake'::citext, '408-203-3253')
     $$,
     'only the same user can see its details'
   );
