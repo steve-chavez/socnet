@@ -21,3 +21,4 @@ alter table  comments              enable row level security;
 
 \ir security/anon.sql
 \ir security/user.sql
+\ir security/user_blocked.sql

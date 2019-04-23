@@ -1,6 +1,7 @@
 ---------
 --users--
 ---------
+
 grant
   select,
   update(username)
@@ -12,11 +13,7 @@ on users
 for select
 to socnet_user
 using(
-  util.jwt_user_id() = users.id  -- user can always see its profile
-  or
-  users.id not in (
-    select util.blocker_ids(util.jwt_user_id())
-  )
+  true
 );
 
 create policy update_policy
@@ -30,6 +27,7 @@ using (
 -----------------
 --users_details--
 -----------------
+
 grant
   select,
   insert,
@@ -45,10 +43,8 @@ using(
   util.jwt_user_id() = users_details.user_id -- user can always see its details
   or
   case audience
-    when 'public' -- all users can see the user details except the blocked ones
-      then users_details.user_id not in (
-        select util.blocker_ids(util.jwt_user_id())
-      )
+    when 'public'
+      then true
     when 'personal'
       then util.jwt_user_id() = users_details.user_id
     when 'friends'
@@ -123,6 +119,7 @@ using (
 ------------------------
 --users_details_access--
 ------------------------
+
 grant
   select,
   insert,
@@ -134,7 +131,7 @@ create policy select_policy
 on users_details_access
 for select
 to socnet_user
-using( -- can see accesess to users_details_access the user owns and the ones he's been assigned with
+using( -- can see acceses the user owns and the ones he's been assigned with
   util.jwt_user_id() in (source_user_id, target_user_id)
 );
 
@@ -168,13 +165,8 @@ create policy select_policy
 on friendships
 for select
 to socnet_user
--- can see all friendships except the blocked ones
 using(
-  case status
-    when 'blocked'
-      then blockee_id is null or util.jwt_user_id() <> blockee_id
-    else true
-  end
+  true
 );
 
 create policy insert_policy
@@ -256,10 +248,8 @@ using (
   util.jwt_user_id() = posts.creator_id -- creator can always see its post
   or
   case audience
-    when 'public' -- all users can see the posts except the blocked ones
-      then posts.creator_id not in (
-        select util.blocker_ids(util.jwt_user_id())
-      )
+    when 'public'
+      then true
     when 'personal'
       then util.jwt_user_id() = posts.creator_id
     when 'friends'
@@ -342,6 +332,7 @@ using(
 ------------
 --comments--
 ------------
+
 grant usage on sequence comments_id_seq to socnet_user;
 
 grant
@@ -361,10 +352,6 @@ using (
     select 1
     from posts
     where posts.id = comments.post_id)
-  and
-  comments.user_id not in (
-    select util.blocker_ids(util.jwt_user_id())
-  )
 );
 
 create policy insert_policy
