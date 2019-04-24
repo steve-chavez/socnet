@@ -61,6 +61,7 @@ copy users_details_access (users_details_id, source_user_id, target_user_id, acc
 8 8 9 whitelist
 8 8 12 whitelist
 7 10 7 blacklist
+13 13 11 blacklist
 \.
 
 truncate table posts cascade;
@@ -81,6 +82,7 @@ truncate table posts_access cascade;
 copy posts_access (post_id, creator_id, source_user_id, target_user_id, access_type) from stdin delimiter ' ';
 4 1 1 2 whitelist
 5 3 1 3 blacklist
+6 6 6 5 blacklist
 \.
 
 truncate table comments cascade;

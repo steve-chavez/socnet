@@ -30,6 +30,21 @@ using(
   )
 );
 
+------------------------
+--users_details_access--
+------------------------
+
+create policy blocked_select_policy
+on users_details_access
+as restrictive
+for select
+to socnet_user
+using(
+  users_details_access.users_details_id not in (
+    select util.blocker_ids(util.jwt_user_id())
+  )
+);
+
 ---------------
 --friendships--
 ---------------
@@ -61,6 +76,21 @@ to socnet_user
 -- since they are already filtered by accepted friendships
 using(
   posts.creator_id not in (
+    select util.blocker_ids(util.jwt_user_id())
+  )
+);
+
+----------------
+--posts_access--
+----------------
+
+create policy blocked_select_policy
+on posts_access
+as restrictive
+for select
+to socnet_user
+using(
+  posts_access.creator_id not in (
     select util.blocker_ids(util.jwt_user_id())
   )
 );

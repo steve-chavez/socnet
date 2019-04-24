@@ -117,14 +117,14 @@ select
   );
 
 set local role socnet_user;
-set local "request.jwt.claim.user_id" to 6;
+set local "request.jwt.claim.user_id" to 5;
 
 select
   is_empty(
     $$
-    delete from posts where id in (3, 7) returning 1;
+    select from posts_access where post_id = 6 and 5 in (source_user_id, target_user_id)
     $$,
-    'user cannot delete posts that belong to other users'
+    'blockee cannot see posts_access from a blocker'
   );
 
 \echo =========
@@ -155,6 +155,17 @@ select
     values (6, 'My post', 'Just a test');
     $$,
     'Post owner can create a post in its name successfully'
+  );
+
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 6;
+
+select
+  is_empty(
+    $$
+    delete from posts where id in (3, 7) returning 1;
+    $$,
+    'user cannot delete posts that belong to other users'
   );
 
 \echo
