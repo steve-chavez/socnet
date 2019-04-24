@@ -1,3 +1,5 @@
+-- RESTRICTIVE SELECT RLS for users that are blocked by other users
+
 ---------
 --users--
 ---------

@@ -38,6 +38,7 @@ where
   f0.status = 'accepted'
 $$ language sql security definer;
 
+-- gets all blockers for an user
 create or replace function blocker_ids(blocked_id int) returns setof int as $$
   select
     case when source_user_id = blockee_id

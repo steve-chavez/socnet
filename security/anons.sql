@@ -1,3 +1,5 @@
+-- anons can do SELECTs on certain public rows
+
 -----------------
 --users_details--
 -----------------

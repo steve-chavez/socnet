@@ -4,8 +4,7 @@ create role socnet_anon;
 drop role if exists socnet_user;
 create role socnet_user;
 
-grant
-  usage
+grant usage
 on schema core
 to
   socnet_user
@@ -19,6 +18,6 @@ alter table  posts_access          enable row level security;
 alter table  posts                 enable row level security;
 alter table  comments              enable row level security;
 
-\ir security/anon.sql
-\ir security/user.sql
-\ir security/user_blocked.sql
+\ir security/anons.sql
+\ir security/users.sql
+\ir security/users_blocked.sql
