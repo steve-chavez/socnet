@@ -1,3 +1,4 @@
+alter sequence users_id_seq restart;
 truncate table users cascade;
 copy users (id, username) from stdin delimiter ' ';
 1 ringo
@@ -64,6 +65,7 @@ copy users_details_access (users_details_id, source_user_id, target_user_id, acc
 13 13 11 blacklist
 \.
 
+alter sequence posts_id_seq restart;
 truncate table posts cascade;
 copy posts (id, creator_id, audience, title, body) from stdin delimiter '|';
 1|1|friends|Excluding Yoko|Not for Yoko.
@@ -85,6 +87,7 @@ copy posts_access (post_id, creator_id, source_user_id, target_user_id, access_t
 6 6 6 5 blacklist
 \.
 
+alter sequence comments_id_seq restart;
 truncate table comments cascade;
 copy comments (post_id, user_id, body) from stdin delimiter '|';
 1|2|First comment!
