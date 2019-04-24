@@ -116,17 +116,6 @@ select
     'blacklisted user cannot delete himself from the blacklist'
   );
 
-set local role socnet_user;
-set local "request.jwt.claim.user_id" to 5;
-
-select
-  is_empty(
-    $$
-    select from posts_access where post_id = 6 and 5 in (source_user_id, target_user_id)
-    $$,
-    'blockee cannot see posts_access from a blocker'
-  );
-
 \echo =========
 \echo posts RLS
 \echo =========
@@ -270,17 +259,6 @@ select
     'public cannot see the post'
   );
 
-set local role socnet_user;
-set local "request.jwt.claim.user_id" to 11;
-
-select
-  is_empty(
-    $$
-    select title from posts where id = 9;
-    $$,
-    'blocked friends of friends cannot see the post'
-  );
-
 \echo
 \echo When audience=personal
 \echo ======================
@@ -388,17 +366,6 @@ select
     values('Hello everybody')
     $$,
     'non-friends can see the user post'
-  );
-
-set local role socnet_user;
-set local "request.jwt.claim.user_id" to 5;
-
-select
-  is_empty(
-    $$
-    select title from posts where id = 8;
-    $$,
-    'blocked user cannot see the public post of a blocker'
   );
 
 \echo

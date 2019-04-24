@@ -3,49 +3,6 @@ select no_plan();
 
 set search_path = core, public;
 
-\echo =========
-\echo users rls
-\echo =========
-
-set local role socnet_user;
-set local "request.jwt.claim.user_id" to 5;
-
-select
-  is_empty(
-    $$
-    select * from users where id in (3, 6);
-    $$,
-    'blockee cannot see the users that blocked him'
-  );
-
-set local role socnet_user;
-set local "request.jwt.claim.user_id" to 3;
-
-select
-  results_eq(
-    $$
-    select username from users where id = 5;
-    $$,
-    $$
-    values('yoko')
-    $$,
-    'blocker can see blocked users'
-  );
-
-set local role socnet_user;
-set local "request.jwt.claim.user_id" to 6;
-
-select
-  results_eq(
-    $$
-    select username from users where id = 5;
-    $$,
-    $$
-    values('yoko')
-    $$,
-    'blocker can see blocked users'
-  );
-
 \echo ========================
 \echo users_details_access rls
 \echo ========================
@@ -122,18 +79,6 @@ select
     'a blacklisted user cannot remove himself from the blacklist'
   );
 
-set local role socnet_user;
-set local "request.jwt.claim.user_id" to 11;
-
-select
-  is_empty(
-    $$
-    select * from users_details_access where users_details_id = 13 and 11 in (source_user_id, target_user_id);
-    $$,
-    'blockee cannot see users_details_access from a blocker'
-  );
-
-
 \echo =========================
 \echo users_details constraints
 \echo =========================
@@ -182,17 +127,6 @@ select
       ('brian@thebeatles.fake'::citext)
     $$,
     'anon can only see public users details'
-  );
-
-set local role socnet_user;
-set local "request.jwt.claim.user_id" to 5;
-
-select
-  is_empty(
-    $$
-    select email, phone from users_details where user_id = 6;
-    $$,
-    'blocked user cannot see the public users_details of a blocker'
   );
 
 \echo
@@ -257,18 +191,6 @@ select
     $$,
     'friends of friends can see the users details'
   );
-
-set local role socnet_user;
-set local "request.jwt.claim.user_id" to 11;
-
-select
-  is_empty(
-    $$
-    select email, phone from users_details where user_id = 13;
-    $$,
-    'friends of friends which are blocked cannot see the users details'
-  );
-
 
 \echo
 \echo When audience=friends_whitelist

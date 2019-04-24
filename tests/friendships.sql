@@ -134,69 +134,6 @@ select
     'an user cannot delete friendships he is not a part of'
   );
 
-\echo
-\echo Blocked friendships
-\echo ===================
-\echo
-
-set local role socnet_user;
-set local "request.jwt.claim.user_id" to 5;
-
-select
-  is_empty(
-    $$
-    select * from friendships where source_user_id in (3, 6) and target_user_id = 5
-    $$,
-    'the blockee cannot see blocked friendships'
-  );
-
-select
-  is_empty(
-    $$
-    update friendships set status = 'accepted' where status = 'blocked' returning *
-    $$,
-    'the blockee cannot modify blocked friendships'
-  );
-
-select
-  is_empty(
-    $$
-    delete from friendships where source_user_id in (6,3) and target_user_id = 5 returning *;
-    $$,
-    'the blockee cannot delete blocked friendships'
-  );
-
-set local role socnet_user;
-set local "request.jwt.claim.user_id" to 6;
-
-select
-  results_eq(
-    $$
-    update friendships
-    set status = 'accepted'
-    where
-      6 in (source_user_id, target_user_id) and
-      status = 'blocked' and blockee_id = 5
-    returning 1
-    $$,
-    $$
-    values(1)
-    $$,
-    'the blocker can update blocked status'
-  );
-
-select
-  results_eq(
-    $$
-    select blockee_id from friendships
-    where source_user_id = 6 and target_user_id = 5
-    $$,
-    $$
-    values(null::integer)
-    $$,
-    'the blockee_id was set to null'
-  );
-
 select * from finish();
 
 do $$ begin assert num_failed() = 0; end $$;
