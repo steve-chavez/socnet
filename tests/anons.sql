@@ -2,13 +2,14 @@ begin;
 
 select no_plan();
 
-set search_path = core, public;
+set local search_path = core, public;
+
+set local role socnet_anon;
+reset "request.jwt.claim.user_id";
 
 \echo ============
 \echo comments RLS
 \echo ============
-
-set local role socnet_anon;
 
 select
   results_eq(
@@ -30,15 +31,12 @@ select
 \echo =====================
 \echo
 
-set local role socnet_anon;
-reset "request.jwt.claim.user_id";
-
 select
   is_empty(
     $$
     select * from posts where id = 1;
     $$,
-    'public cannot see the post'
+    'anon cannot see the post'
   );
 
 \echo
@@ -46,24 +44,18 @@ select
 \echo ================================
 \echo
 
-set local role socnet_anon;
-reset "request.jwt.claim.user_id";
-
 select
   is_empty(
     $$
     select * from posts where id = 7;
     $$,
-    'public cannot see the post'
+    'anon cannot see the post'
   );
 
 \echo
 \echo When audience=public
 \echo =====================
 \echo
-
-set local role socnet_anon;
-reset "request.jwt.claim.user_id";
 
 select
   results_eq(
@@ -73,7 +65,7 @@ select
     $$
     values('Hello everybody')
     $$,
-    'public can see the user post'
+    'anon can see the user post'
   );
 
 \echo
@@ -81,15 +73,12 @@ select
 \echo =======================
 \echo
 
-set local role socnet_anon;
-reset "request.jwt.claim.user_id";
-
 select
   is_empty(
     $$
     select * from posts where id = 4;
     $$,
-    'public cannot see the user post'
+    'anon cannot see the user post'
   );
 
 \echo
@@ -97,23 +86,29 @@ select
 \echo =======================
 \echo
 
-set local role socnet_anon;
-reset "request.jwt.claim.user_id";
-
 select
   is_empty(
     $$
     select * from posts where id = 5;
     $$,
-    'public cannot see the user post'
+    'anon cannot see the user post'
+  );
+
+\echo
+\echo When audience=personal
+\echo ======================
+\echo
+
+select is_empty(
+    $$
+    select * from posts where id = 2;
+    $$,
+    'anon cannot see the user post'
   );
 
 \echo ================
 \echo posts_access rls
 \echo ================
-
-set local role socnet_anon;
-reset "request.jwt.claim.user_id";
 
 select
   throws_ok(
@@ -122,15 +117,12 @@ select
     $$,
     42501,
     'permission denied for relation posts_access',
-    'public cannot see any posts_access'
+    'anon cannot see any posts_access'
   );
 
 \echo ===============
 \echo friendships rls
 \echo ===============
-
-set local role socnet_anon;
-reset "request.jwt.claim.user_id";
 
 select
   throws_ok(
@@ -139,15 +131,12 @@ select
     $$,
     42501,
     'permission denied for relation friendships',
-    'public cannot see any friendships'
+    'anon cannot see any friendships'
   );
 
 \echo ========================
 \echo users_details_access rls
 \echo ========================
-
-set local role socnet_anon;
-reset "request.jwt.claim.user_id";
 
 select
   throws_ok(
@@ -156,7 +145,7 @@ select
     $$,
     42501,
     'permission denied for relation users_details_access',
-    'public cannot see any users_details_access'
+    'anon cannot see any users_details_access'
   );
 
 \echo =================
@@ -167,9 +156,6 @@ select
 \echo When audience=public
 \echo =====================
 \echo
-
-set local role socnet_anon;
-reset "request.jwt.claim.user_id";
 
 select
   results_eq(

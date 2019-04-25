@@ -2,13 +2,15 @@ begin;
 
 select no_plan();
 
-set search_path = core, public;
+set local search_path = core, public;
+
+set local role socnet_user;
 
 \echo =======================
 \echo friendships constraints
 \echo =======================
 
-set local role postgres;
+set local "request.jwt.claim.user_id" to 1;
 
 select
   throws_ok(
@@ -39,6 +41,8 @@ select
     'There can only be a friendship between two users'
   );
 
+set local "request.jwt.claim.user_id" to 5;
+
 select
   throws_ok(
     $$
@@ -57,6 +61,8 @@ select
     'blockee_id can only be one of the users in the friendship'
   );
 
+set local "request.jwt.claim.user_id" to 1;
+
 select
   throws_ok(
     $$
@@ -66,6 +72,8 @@ select
     'status cannot go back to pending',
     'accepted status cannot go back to pending'
   );
+
+set local "request.jwt.claim.user_id" to 6;
 
 select
   throws_ok(
@@ -81,7 +89,6 @@ select
 \echo friendships rls
 \echo ===============
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 1;
 
 select

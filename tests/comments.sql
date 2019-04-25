@@ -2,13 +2,14 @@ begin;
 
 select no_plan();
 
-set search_path = core, public;
+set local search_path = core, public;
+
+set local role socnet_user;
 
 \echo ============
 \echo comments RLS
 \echo ============
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 5;
 
 select
@@ -19,7 +20,6 @@ select
     'an user cannot see the comments of a post he cannot see'
   );
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 2;
 
 select

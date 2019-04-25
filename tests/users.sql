@@ -3,11 +3,12 @@ select no_plan();
 
 set search_path = core, public;
 
+set local role socnet_user;
+
 \echo ========================
 \echo users_details_access rls
 \echo ========================
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 9;
 
 select
@@ -21,7 +22,6 @@ select
     'an user can only see users_details_access which he is a part of'
   );
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 10;
 
 select
@@ -44,7 +44,6 @@ select
     'an user cannot include others on a whitelist of another user details'
   );
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 8;
 
 select
@@ -55,7 +54,6 @@ select
     'user details owner can include friends in the whitelist'
   );
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 10;
 
 select
@@ -70,7 +68,6 @@ select
 \echo users_details constraints
 \echo =========================
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 2;
 
 select
@@ -100,7 +97,6 @@ select
 \echo =====================
 \echo
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 1;
 
 select
@@ -114,7 +110,6 @@ select
     'the user can see its own public details'
   );
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 2;
 
 select
@@ -128,7 +123,6 @@ select
     'friends can see the user public details'
   );
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 11;
 
 select
@@ -148,7 +142,6 @@ select
 \echo =====================
 \echo
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 3;
 
 select
@@ -162,7 +155,6 @@ select
     'friends can see the users details'
   );
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 5;
 
 select
@@ -178,7 +170,6 @@ select
 \echo ================================
 \echo
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 5;
 
 select
@@ -192,7 +183,6 @@ select
     'friends of friends can see the users details'
   );
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 7;
 
 select
@@ -211,7 +201,6 @@ select
 \echo ===============================
 \echo
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 9;
 
 select
@@ -225,7 +214,6 @@ select
     'whitelisted friend can see the users details'
   );
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 12;
 
 select
@@ -239,7 +227,6 @@ select
     'whitelisted friend can see the users details'
   );
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 7;
 
 select
@@ -255,7 +242,6 @@ select
 \echo ===============================
 \echo
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 10;
 
 select
@@ -266,7 +252,6 @@ select
     'blacklisted friend cannot see the users details'
   );
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 8;
 
 select
@@ -285,7 +270,6 @@ select
 \echo ======================
 \echo
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 9;
 
 select
@@ -299,7 +283,6 @@ select
     'only the same user can see its details'
   );
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 7;
 
 select

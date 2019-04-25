@@ -3,11 +3,12 @@ select no_plan();
 
 set search_path = core, public;
 
+set local role socnet_user;
+
 \echo =========
 \echo users rls
 \echo =========
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 5;
 
 select
@@ -18,7 +19,6 @@ select
     'blockee cannot see the users that blocked him'
   );
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 3;
 
 select
@@ -32,7 +32,6 @@ select
     'blocker can see blocked users'
   );
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 6;
 
 select
@@ -50,7 +49,6 @@ select
 \echo users_details_access rls
 \echo ========================
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 11;
 
 select
@@ -65,7 +63,6 @@ select
 \echo users_details rls
 \echo =================
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 5;
 
 select
@@ -76,7 +73,6 @@ select
     'blocked user cannot see the public users_details of a blocker'
   );
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 11;
 
 select
@@ -91,7 +87,6 @@ select
 \echo posts rls
 \echo =========
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 11;
 
 select
@@ -102,7 +97,6 @@ select
     'blocked friends of friends cannot see the post'
   );
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 5;
 
 select
@@ -118,7 +112,6 @@ select
 \echo posts_access rls
 \echo ================
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 5;
 
 select
@@ -133,7 +126,6 @@ select
 \echo comments rls
 \echo ============
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 5;
 
 select
@@ -144,7 +136,6 @@ select
     'a blockee cannot see the comments of a blocker, even if the post is public'
   );
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 3;
 
 select
@@ -162,7 +153,6 @@ select
 \echo friendships rls
 \echo ===============
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 5;
 
 select
@@ -189,7 +179,6 @@ select
     'the blockee cannot delete blocked friendships'
   );
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 6;
 
 select

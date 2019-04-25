@@ -4,11 +4,13 @@ select no_plan();
 
 set search_path = core, public;
 
+set local role socnet_user;
+
 \echo ========================
 \echo posts_access constraints
 \echo ========================
 
-set local role postgres;
+set local "request.jwt.claim.user_id" to 3;
 
 select
   throws_ok(
@@ -34,7 +36,6 @@ select
 \echo posts_access rls
 \echo ================
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 2;
 
 select
@@ -48,7 +49,6 @@ select
     'an user can only see posts_access which he is a part of'
   );
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 2;
 
 select
@@ -71,7 +71,6 @@ select
     'an user cannot include others on a whitelist of a post he does not own'
   );
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 6;
 
 select
@@ -92,7 +91,6 @@ select
     'post owner cannot include non-friends in the post whitelist'
   );
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 1;
 
 select
@@ -107,7 +105,6 @@ select
 \echo posts RLS
 \echo =========
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 1;
 
 select
@@ -121,7 +118,6 @@ select
     'An user cannot create a post in the name of another user'
   );
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 6;
 
 select
@@ -133,7 +129,6 @@ select
     'Post owner can create a post in its name successfully'
   );
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 6;
 
 select
@@ -149,7 +144,6 @@ select
 \echo =====================
 \echo
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 1;
 
 select
@@ -163,7 +157,6 @@ select
     'the creator can see its post'
   );
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 2;
 
 select
@@ -177,7 +170,6 @@ select
     'friends can see the post'
   );
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 5;
 
 select
@@ -193,7 +185,6 @@ select
 \echo ================================
 \echo
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 5;
 
 select
@@ -207,7 +198,6 @@ select
     'friends of friends can see the post'
   );
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 2;
 
 select
@@ -226,14 +216,6 @@ select
 \echo ======================
 \echo
 
-select is_empty(
-    $$
-    select * from posts where id = 2;
-    $$,
-    'public cannot see the user post'
-  );
-
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 1;
 
 select
@@ -247,7 +229,6 @@ select
     'only the creator can see its post'
   );
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 2;
 
 select
@@ -258,7 +239,6 @@ select
     'friends cannot see the user post'
   );
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 5;
 
 select
@@ -274,7 +254,6 @@ select
 \echo =====================
 \echo
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 1;
 
 select
@@ -288,7 +267,6 @@ select
     'the creator can see its own post'
   );
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 2;
 
 select
@@ -302,7 +280,6 @@ select
     'friends can see the user post'
   );
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 5;
 
 select
@@ -321,7 +298,6 @@ select
 \echo =======================
 \echo
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 1;
 
 select
@@ -335,7 +311,6 @@ select
     'the creator can see its own post'
   );
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 2;
 
 select
@@ -349,7 +324,6 @@ select
     'some friends can see the user post'
   );
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 3;
 
 select
@@ -360,7 +334,6 @@ select
     'some friends cannot see the user post'
   );
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 5;
 
 select
@@ -376,7 +349,6 @@ select
 \echo =======================
 \echo
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 3;
 
 select
@@ -390,7 +362,6 @@ select
     'the creator can see its own post'
   );
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 4;
 
 select
@@ -404,7 +375,6 @@ select
     'non blacklisted friends can see the user post'
   );
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 1;
 
 select
@@ -415,7 +385,6 @@ select
     'blacklisted friends cannnot see the user post'
   );
 
-set local role socnet_user;
 set local "request.jwt.claim.user_id" to 5;
 
 select
