@@ -42,7 +42,7 @@ as restrictive
 for select
 to socnet_user
 using(
-  users_details_access.users_details_id not in (
+  users_details_access.user_details_id not in (
     select util.blocker_ids(util.jwt_user_id())
   )
 );

@@ -74,7 +74,7 @@ select
 \echo =====
 
 \echo
-\echo When audience=friends
+\echo when audience=friends
 \echo =====================
 \echo
 
@@ -87,7 +87,7 @@ select
   );
 
 \echo
-\echo When audience=friends of friends
+\echo when audience=friends of friends
 \echo ================================
 \echo
 
@@ -100,7 +100,7 @@ select
   );
 
 \echo
-\echo When audience=public
+\echo when audience=public
 \echo =====================
 \echo
 
@@ -116,7 +116,7 @@ select
   );
 
 \echo
-\echo When audience=whitelist
+\echo when audience=whitelist
 \echo =======================
 \echo
 
@@ -129,7 +129,7 @@ select
   );
 
 \echo
-\echo When audience=blacklist
+\echo when audience=blacklist
 \echo =======================
 \echo
 
@@ -142,7 +142,7 @@ select
   );
 
 \echo
-\echo When audience=personal
+\echo when audience=personal
 \echo ======================
 \echo
 

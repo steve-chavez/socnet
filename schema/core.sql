@@ -76,12 +76,12 @@ create type access_type as enum (
 );
 
 create table users_details_access (
-  users_details_id  int          not null  references users_details(user_id)  on delete cascade
+  user_details_id  int          not null  references users_details(user_id)  on delete cascade
 , source_user_id    int          not null
 , target_user_id    int          not null
 , access_type       access_type  not null
 
-, primary key            (users_details_id, source_user_id, target_user_id, access_type)
+, primary key            (user_details_id, source_user_id, target_user_id, access_type)
 , foreign key            (source_user_id, target_user_id)
   references friendships (source_user_id, target_user_id)
   on delete cascade

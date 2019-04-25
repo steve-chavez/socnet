@@ -58,7 +58,8 @@ using(
           end
         from friendships f
         where
-          status = 'accepted'
+          status = 'accepted' and
+          util.jwt_user_id() in (source_user_id, target_user_id)
       )
     when 'friends_of_friends'
       then util.jwt_user_id() in (
@@ -73,7 +74,7 @@ using(
           end
         from users_details_access acc
         where
-          acc.users_details_id = users_details.user_id  and
+          acc.user_details_id = users_details.user_id  and
           acc.access_type      = 'whitelist'
       )
     when 'friends_blacklist'
@@ -96,7 +97,7 @@ using(
           end
         from users_details_access acc
         where
-          acc.users_details_id = users_details.user_id  and
+          acc.user_details_id = users_details.user_id  and
           acc.access_type      = 'blacklist'
       )
   end
@@ -142,7 +143,7 @@ on users_details_access
 for insert
 to socnet_user
 with check( -- can only insert when the users_details_access belongs to the user
-  util.jwt_user_id() = users_details_access.users_details_id
+  util.jwt_user_id() = users_details_access.user_details_id
 );
 
 create policy delete_policy
@@ -150,7 +151,7 @@ on users_details_access
 for delete
 to socnet_user
 using(
-  util.jwt_user_id() = users_details_access.users_details_id
+  util.jwt_user_id() = users_details_access.user_details_id
 );
 
 ---------------

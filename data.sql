@@ -58,7 +58,7 @@ copy friendships (source_user_id, target_user_id, status, blockee_id) from stdin
 \.
 
 truncate table users_details_access cascade;
-copy users_details_access (users_details_id, source_user_id, target_user_id, access_type) from stdin delimiter ' ';
+copy users_details_access (user_details_id, source_user_id, target_user_id, access_type) from stdin delimiter ' ';
 8 8 9 whitelist
 8 8 12 whitelist
 7 10 7 blacklist

@@ -14,7 +14,7 @@ set local "request.jwt.claim.user_id" to 9;
 select
   results_eq(
     $$
-    select users_details_id from users_details_access;
+    select user_details_id from users_details_access;
     $$,
     $$
     values(8)
@@ -59,7 +59,7 @@ set local "request.jwt.claim.user_id" to 10;
 select
   is_empty(
     $$
-    delete from users_details_access where users_details_id = 7 and 10 in (source_user_id, target_user_id) returning 1;
+    delete from users_details_access where user_details_id = 7 and 10 in (source_user_id, target_user_id) returning 1;
     $$,
     'a blacklisted user cannot remove himself from the blacklist'
   );
@@ -93,7 +93,7 @@ select
 \echo =================
 
 \echo
-\echo When audience=public
+\echo when audience=public
 \echo =====================
 \echo
 
@@ -138,7 +138,7 @@ select
 
 
 \echo
-\echo When audience=friends
+\echo when audience=friends
 \echo =====================
 \echo
 
@@ -166,7 +166,7 @@ select
   );
 
 \echo
-\echo When audience=friends of friends
+\echo when audience=friends of friends
 \echo ================================
 \echo
 
@@ -197,7 +197,7 @@ select
   );
 
 \echo
-\echo When audience=friends_whitelist
+\echo when audience=friends_whitelist
 \echo ===============================
 \echo
 
@@ -238,7 +238,7 @@ select
   );
 
 \echo
-\echo When audience=friends_blacklist
+\echo when audience=friends_blacklist
 \echo ===============================
 \echo
 
@@ -266,7 +266,7 @@ select
   );
 
 \echo
-\echo When audience=personal
+\echo when audience=personal
 \echo ======================
 \echo
 

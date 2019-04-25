@@ -54,7 +54,7 @@ set local "request.jwt.claim.user_id" to 11;
 select
   is_empty(
     $$
-    select * from users_details_access where users_details_id = 13 and 11 in (source_user_id, target_user_id);
+    select * from users_details_access where user_details_id = 13 and 11 in (source_user_id, target_user_id);
     $$,
     'blockee cannot see users_details_access from a blocker'
   );
