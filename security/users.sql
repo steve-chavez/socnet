@@ -44,7 +44,7 @@ to socnet_user
 using(
   util.jwt_user_id() = users_details.user_id -- user can always see its details
   or
-  case audience
+  case users_details.audience
     when 'public'
       then true
     when 'personal'
@@ -52,7 +52,7 @@ using(
     when 'friends'
       then util.jwt_user_id() in (
         select
-          case when f.source_user_id = util.jwt_user_id()
+          case when f.source_user_id = users_details.user_id
             then f.target_user_id
             else f.source_user_id
           end

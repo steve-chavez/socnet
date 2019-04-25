@@ -142,7 +142,7 @@ select
 \echo =====================
 \echo
 
-set local "request.jwt.claim.user_id" to 3;
+set local "request.jwt.claim.user_id" to 1;
 
 select
   results_eq(
