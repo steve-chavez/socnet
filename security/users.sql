@@ -86,7 +86,8 @@ using(
           end
         from friendships f
         where
-          status = 'accepted'
+          status = 'accepted' and
+          util.jwt_user_id() in (source_user_id, target_user_id)
 
         except
 
@@ -98,7 +99,7 @@ using(
         from users_details_access acc
         where
           acc.user_details_id = users_details.user_id  and
-          acc.access_type      = 'blacklist'
+          acc.access_type     = 'blacklist'
       )
   end
 );
@@ -264,7 +265,8 @@ using (
           end
         from friendships f
         where
-          status = 'accepted'
+          status = 'accepted' and
+          util.jwt_user_id() in (source_user_id, target_user_id)
       )
     when 'friends_of_friends'
       then util.jwt_user_id() in (
@@ -291,7 +293,8 @@ using (
           end
         from friendships f
         where
-          status = 'accepted'
+          status = 'accepted' and
+          util.jwt_user_id() in (source_user_id, target_user_id)
 
         except
 
