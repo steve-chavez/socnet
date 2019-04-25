@@ -7,9 +7,56 @@ set local search_path = core, public;
 set local role socnet_anon;
 reset "request.jwt.claim.user_id";
 
-\echo ============
-\echo comments RLS
-\echo ============
+\echo =====
+\echo users
+\echo =====
+
+select
+  results_eq(
+    $$
+    select count(*) from users;
+    $$,
+    $$
+    values(13::bigint);
+    $$,
+    'anon can see all users'
+  );
+
+\echo =============
+\echo users_details
+\echo =============
+
+select
+  results_eq(
+    $$
+    select email from users_details;
+    $$,
+    $$
+    values
+      ('ringo@thebeatles.fake'::citext),
+      ('brian@thebeatles.fake'::citext)
+    $$,
+    'anon can only see users public details'
+  );
+
+\echo ====================
+\echo users_details_access
+\echo ====================
+
+select
+  throws_ok(
+    $$
+    select * from users_details_access;
+    $$,
+    42501,
+    'permission denied for relation users_details_access',
+    'anon cannot see any users_details_access'
+  );
+
+
+\echo ========
+\echo comments
+\echo ========
 
 select
   results_eq(
@@ -22,9 +69,9 @@ select
     'anon can see the comments of a public post'
   );
 
-\echo =========
-\echo posts RLS
-\echo =========
+\echo =====
+\echo posts
+\echo =====
 
 \echo
 \echo When audience=friends
@@ -106,9 +153,9 @@ select is_empty(
     'anon cannot see the user post'
   );
 
-\echo ================
-\echo posts_access rls
-\echo ================
+\echo ============
+\echo posts_access
+\echo ============
 
 select
   throws_ok(
@@ -120,9 +167,9 @@ select
     'anon cannot see any posts_access'
   );
 
-\echo ===============
-\echo friendships rls
-\echo ===============
+\echo ===========
+\echo friendships
+\echo ===========
 
 select
   throws_ok(
@@ -132,42 +179,6 @@ select
     42501,
     'permission denied for relation friendships',
     'anon cannot see any friendships'
-  );
-
-\echo ========================
-\echo users_details_access rls
-\echo ========================
-
-select
-  throws_ok(
-    $$
-    select * from users_details_access;
-    $$,
-    42501,
-    'permission denied for relation users_details_access',
-    'anon cannot see any users_details_access'
-  );
-
-\echo =================
-\echo users_details rls
-\echo =================
-
-\echo
-\echo When audience=public
-\echo =====================
-\echo
-
-select
-  results_eq(
-    $$
-    select email from users_details;
-    $$,
-    $$
-    values
-      ('ringo@thebeatles.fake'::citext),
-      ('brian@thebeatles.fake'::citext)
-    $$,
-    'anon can only see public users details'
   );
 
 select * from finish();

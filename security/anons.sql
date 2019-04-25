@@ -1,5 +1,22 @@
 -- anons can do SELECTs on certain public rows
 
+---------
+--users--
+---------
+
+grant
+  select
+on users
+to socnet_anon;
+
+create policy anon_select_policy
+on users
+for select
+to socnet_anon
+using (
+  true
+);
+
 -----------------
 --users_details--
 -----------------
