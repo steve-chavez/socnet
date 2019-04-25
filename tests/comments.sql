@@ -8,19 +8,6 @@ set search_path = core, public;
 \echo comments RLS
 \echo ============
 
-set local role socnet_anon;
-
-select
-  results_eq(
-    $$
-    select count(*) from comments where post_id = 3;
-    $$,
-    $$
-    values(3::bigint)
-    $$,
-    'anon can see the comments of a public post'
-  );
-
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 5;
 

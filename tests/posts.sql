@@ -34,19 +34,6 @@ select
 \echo posts_access rls
 \echo ================
 
-set local role socnet_anon;
-reset "request.jwt.claim.user_id";
-
-select
-  throws_ok(
-    $$
-    select * from posts_access;
-    $$,
-    42501,
-    'permission denied for relation posts_access',
-    'public cannot see any posts_access'
-  );
-
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 2;
 
@@ -162,17 +149,6 @@ select
 \echo =====================
 \echo
 
-set local role socnet_anon;
-reset "request.jwt.claim.user_id";
-
-select
-  is_empty(
-    $$
-    select * from posts where id = 1;
-    $$,
-    'public cannot see the post'
-  );
-
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 1;
 
@@ -212,9 +188,6 @@ select
     'non-friends cannot see the post'
   );
 
-set local role socnet_anon;
-reset "request.jwt.claim.user_id";
-
 \echo
 \echo When audience=friends of friends
 \echo ================================
@@ -246,17 +219,6 @@ select
     values('Hey!')
     $$,
     'friends can see the post'
-  );
-
-set local role socnet_anon;
-reset "request.jwt.claim.user_id";
-
-select
-  is_empty(
-    $$
-    select * from posts where id = 7;
-    $$,
-    'public cannot see the post'
   );
 
 \echo
@@ -312,20 +274,6 @@ select
 \echo =====================
 \echo
 
-set local role socnet_anon;
-reset "request.jwt.claim.user_id";
-
-select
-  results_eq(
-    $$
-    select title from posts where id = 3;
-    $$,
-    $$
-    values('Hello everybody')
-    $$,
-    'public can see the user post'
-  );
-
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 1;
 
@@ -372,17 +320,6 @@ select
 \echo When audience=whitelist
 \echo =======================
 \echo
-
-set local role socnet_anon;
-reset "request.jwt.claim.user_id";
-
-select
-  is_empty(
-    $$
-    select * from posts where id = 4;
-    $$,
-    'public cannot see the user post'
-  );
 
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 1;
@@ -438,17 +375,6 @@ select
 \echo When audience=blacklist
 \echo =======================
 \echo
-
-set local role socnet_anon;
-reset "request.jwt.claim.user_id";
-
-select
-  is_empty(
-    $$
-    select * from posts where id = 5;
-    $$,
-    'public cannot see the user post'
-  );
 
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 3;

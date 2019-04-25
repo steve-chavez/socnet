@@ -81,19 +81,6 @@ select
 \echo friendships rls
 \echo ===============
 
-set local role socnet_anon;
-reset "request.jwt.claim.user_id";
-
-select
-  throws_ok(
-    $$
-    select * from friendships;
-    $$,
-    42501,
-    'permission denied for relation friendships',
-    'public cannot see any friendships'
-  );
-
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 1;
 

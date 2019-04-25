@@ -7,19 +7,6 @@ set search_path = core, public;
 \echo users_details_access rls
 \echo ========================
 
-set local role socnet_anon;
-reset "request.jwt.claim.user_id";
-
-select
-  throws_ok(
-    $$
-    select * from users_details_access;
-    $$,
-    42501,
-    'permission denied for relation users_details_access',
-    'public cannot see any users_details_access'
-  );
-
 set local role socnet_user;
 set local "request.jwt.claim.user_id" to 9;
 
@@ -113,21 +100,48 @@ select
 \echo =====================
 \echo
 
-set local role socnet_anon;
-reset "request.jwt.claim.user_id";
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 1;
 
 select
   results_eq(
     $$
-    select email from users_details;
+    select email from users_details where user_id = 1;
     $$,
     $$
-    values
-      ('ringo@thebeatles.fake'::citext),
-      ('brian@thebeatles.fake'::citext)
+    values ('ringo@thebeatles.fake'::citext)
     $$,
-    'anon can only see public users details'
+    'the user can see its own public details'
   );
+
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 2;
+
+select
+  results_eq(
+    $$
+    select email from users_details where user_id = 1;
+    $$,
+    $$
+    values ('ringo@thebeatles.fake'::citext)
+    $$,
+    'friends can see the user public details'
+  );
+
+set local role socnet_user;
+set local "request.jwt.claim.user_id" to 11;
+
+select
+  results_eq(
+    $$
+    select email from users_details where user_id = 1;
+    $$,
+    $$
+    values ('ringo@thebeatles.fake'::citext)
+    $$,
+    'non-friends can see the user public details'
+  );
+
 
 \echo
 \echo When audience=friends
