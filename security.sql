@@ -19,5 +19,8 @@ alter table  posts                 enable row level security;
 alter table  comments              enable row level security;
 
 \ir security/anons.sql
+\ir security/comments.sql
+\ir security/friendships.sql
+\ir security/posts.sql
 \ir security/users.sql
 \ir security/users_blocked.sql

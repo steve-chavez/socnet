@@ -7,6 +7,7 @@ set search_path = util, core, public;
 --utilitarian functions--
 -------------------------
 
+-- get the user_id from the jwt
 create or replace function jwt_user_id()
 returns int as $$
   select nullif(current_setting('request.jwt.claim.user_id', true), '')::int;

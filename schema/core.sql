@@ -9,12 +9,12 @@ create table users (
 );
 
 create type audience as enum (
-  'personal',
-  'friends_whitelist',
-  'friends_blacklist',
-  'friends',
-  'friends_of_friends',
-  'public'
+  'personal'
+, 'friends_whitelist'
+, 'friends_blacklist'
+, 'friends'
+, 'friends_of_friends'
+, 'public'
 );
 
 create table users_details (
@@ -25,7 +25,9 @@ create table users_details (
 );
 
 create type friendship_status as enum (
-  'pending', 'accepted', 'blocked'
+  'pending'
+, 'accepted'
+, 'blocked'
 );
 
 create table friendships (
@@ -77,7 +79,8 @@ create index target_user_id_idx on friendships(target_user_id);
 create index blockee_id_idx on friendships(blockee_id) where blockee_id is not null;
 
 create type access_type as enum (
-  'whitelist', 'blacklist'
+  'whitelist'
+, 'blacklist'
 );
 
 create table users_details_access (
