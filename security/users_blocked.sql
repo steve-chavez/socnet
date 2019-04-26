@@ -60,7 +60,9 @@ to socnet_user
 using(
   case status
     when 'blocked'
-      then blockee_id is null or util.jwt_user_id() <> blockee_id
+      then
+        blockee_id is null or
+        blockee_id <> util.jwt_user_id()
     else true
   end
 );

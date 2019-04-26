@@ -53,15 +53,13 @@ join friends f1 on
   f1.friend_id in (f0.source_user_id, f0.target_user_id)
 where
   f0.status = 'accepted'
-$$ language sql security definer;
+$$ stable language sql security definer;
 
 -- gets all blockers for an user
 create or replace function blocker_ids(blocked_id int) returns setof int as $$
   select
-    util.get_friend_id(blockee_id, f) as user_id
+    util.get_friend_id(f.blockee_id, f) as user_id
   from friendships f
   where
-    $1 in (source_user_id, target_user_id) and
-    status = 'blocked' and
-    $1 = blockee_id
-$$ language sql security definer;
+    f.blockee_id = $1
+$$ stable language sql security definer;

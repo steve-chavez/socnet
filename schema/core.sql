@@ -69,7 +69,12 @@ on friendships(
   least(source_user_id, target_user_id)
 , greatest(source_user_id, target_user_id)
 );
+
+-- for searches of the form: id in (source_user_id, target_user_id)
 create index target_user_id_idx on friendships(target_user_id);
+
+-- there'd be a lot of blocked_id nulls so use a partial index
+create index blockee_id_idx on friendships(blockee_id) where blockee_id is not null;
 
 create type access_type as enum (
   'whitelist', 'blacklist'
