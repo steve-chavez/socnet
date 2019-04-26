@@ -3,3 +3,4 @@ create extension if not exists citext schema public;
 
 \ir schema/core.sql
 \ir schema/util.sql
+\ir schema/api.sql
