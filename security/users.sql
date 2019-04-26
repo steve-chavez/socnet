@@ -37,59 +37,103 @@ grant
 on users_details
 to socnet_user;
 
-create policy select_policy
+create policy own_select_policy
+on users_details
+for select
+to socnet_user
+-- user can always see its details
+using(
+  util.jwt_user_id() = users_details.user_id
+);
+
+create policy public_select_policy
 on users_details
 for select
 to socnet_user
 using(
-  util.jwt_user_id() = users_details.user_id -- user can always see its details
-  or
-  case users_details.audience
-    when 'public'
-      then true
-    when 'personal'
-      then util.jwt_user_id() = users_details.user_id
-    when 'friends'
-      then util.jwt_user_id() in (
-        select
-          util.get_friend_id(users_details.user_id, f)
-        from friendships f
-        where
-          status = 'accepted' and
-          util.jwt_user_id() in (source_user_id, target_user_id)
-      )
-    when 'friends_of_friends'
-      then util.jwt_user_id() in (
-        select util.friends_of_friends(users_details.user_id)
-      )
-    when 'friends_whitelist'
-      then util.jwt_user_id() in (
-        select
-          util.get_friend_id(users_details.user_id, acc)
-        from users_details_access acc
-        where
-          acc.user_details_id = users_details.user_id  and
-          acc.access_type     = 'whitelist'
-      )
-    when 'friends_blacklist'
-      then util.jwt_user_id() in (
-        select
-          util.get_friend_id(users_details.user_id, f)
-        from friendships f
-        where
-          status = 'accepted' and
-          util.jwt_user_id() in (source_user_id, target_user_id)
+  users_details.audience = 'public'
+);
 
-        except
+create policy personal_select_policy
+on users_details
+for select
+to socnet_user
+using(
+  users_details.audience = 'personal'
+  and
+  util.jwt_user_id() = users_details.user_id
+);
 
-        select
-          util.get_friend_id(users_details.user_id, acc)
-        from users_details_access acc
-        where
-          acc.user_details_id = users_details.user_id  and
-          acc.access_type     = 'blacklist'
-      )
-  end
+create policy friends_select_policy
+on users_details
+for select
+to socnet_user
+using(
+  users_details.audience = 'friends'
+  and
+  util.jwt_user_id() in (
+    select
+      util.get_friend_id(users_details.user_id, f)
+    from friendships f
+    where
+      users_details.user_id in (source_user_id, target_user_id) and
+      status = 'accepted'
+  )
+);
+
+create policy friends_of_friends_select_policy
+on users_details
+for select
+to socnet_user
+using(
+  users_details.audience = 'friends_of_friends'
+  and
+  util.jwt_user_id() in (
+    select util.friends_of_friends(users_details.user_id)
+  )
+);
+
+create policy friends_whitelist_select_policy
+on users_details
+for select
+to socnet_user
+using(
+  users_details.audience = 'friends_whitelist'
+  and
+  util.jwt_user_id() in (
+    select
+      util.get_friend_id(users_details.user_id, acc)
+    from users_details_access acc
+    where
+      acc.user_details_id = users_details.user_id  and
+      acc.access_type     = 'whitelist'
+  )
+);
+
+create policy friends_blacklist_select_policy
+on users_details
+for select
+to socnet_user
+using(
+  users_details.audience = 'friends_blacklist'
+  and
+  util.jwt_user_id() in (
+    select
+      util.get_friend_id(users_details.user_id, f)
+    from friendships f
+    where
+      users_details.user_id in (source_user_id, target_user_id) and
+      status = 'accepted'
+
+    except
+
+    select
+      util.get_friend_id(users_details.user_id, acc)
+    from users_details_access acc
+    where
+      acc.user_details_id = users_details.user_id  and
+      acc.access_type     = 'blacklist'
+  )
 );
 
 create policy insert_policy
@@ -232,59 +276,93 @@ grant
 on posts
 to socnet_user;
 
-create policy select_policy
+create policy own_select_policy
+on posts
+for select
+to socnet_user
+-- creator can always see its own post
+using (
+  util.jwt_user_id() = posts.creator_id
+);
+
+create policy public_select_policy
 on posts
 for select
 to socnet_user
 using (
-  util.jwt_user_id() = posts.creator_id -- creator can always see its post
-  or
-  case posts.audience
-    when 'public'
-      then true
-    when 'personal'
-      then util.jwt_user_id() = posts.creator_id
-    when 'friends'
-      then util.jwt_user_id() in (
-        select
-          util.get_friend_id(posts.creator_id, f)
-        from friendships f
-        where
-          status = 'accepted' and
-          util.jwt_user_id() in (source_user_id, target_user_id)
-      )
-    when 'friends_of_friends'
-      then util.jwt_user_id() in (
-        select util.friends_of_friends(posts.creator_id)
-      )
-    when 'friends_whitelist'
-      then util.jwt_user_id() in (
-        select
-          util.get_friend_id(posts.creator_id, acc)
-        from posts_access acc
-        where
-          acc.post_id     = posts.id    and
-          acc.access_type = 'whitelist'
-      )
-    when 'friends_blacklist'
-      then util.jwt_user_id() in (
-        select
-          util.get_friend_id(posts.creator_id, f)
-        from friendships f
-        where
-          status = 'accepted' and
-          util.jwt_user_id() in (source_user_id, target_user_id)
+  posts.audience = 'public'
+);
 
-        except
+create policy friends_select_policy
+on posts
+for select
+to socnet_user
+using (
+  posts.audience = 'friends'
+  and
+  util.jwt_user_id() in (
+    select
+      util.get_friend_id(posts.creator_id, f)
+    from friendships f
+    where
+      posts.creator_id in (source_user_id, target_user_id) and
+      status = 'accepted'
+  )
+);
 
-        select
-          util.get_friend_id(posts.creator_id, acc)
-        from posts_access acc
-        where
-          acc.post_id     = posts.id    and
-          acc.access_type = 'blacklist'
-      )
-  end
+create policy friends_of_friends_select_policy
+on posts
+for select
+to socnet_user
+using (
+  posts.audience = 'friends_of_friends'
+  and
+  util.jwt_user_id() in (
+    select util.friends_of_friends(posts.creator_id)
+  )
+);
+
+create policy friends_whitelist_select_policy
+on posts
+for select
+to socnet_user
+using (
+  posts.audience = 'friends_whitelist'
+  and
+  util.jwt_user_id() in (
+    select
+      util.get_friend_id(posts.creator_id, acc)
+    from posts_access acc
+    where
+      acc.post_id     = posts.id    and
+      acc.access_type = 'whitelist'
+  )
+);
+
+create policy friends_blacklist_select_policy
+on posts
+for select
+to socnet_user
+using (
+  posts.audience = 'friends_blacklist'
+  and
+  util.jwt_user_id() in (
+    select
+      util.get_friend_id(posts.creator_id, f)
+    from friendships f
+    where
+      posts.creator_id in (source_user_id, target_user_id) and
+      status = 'accepted'
+
+    except
+
+    select
+      util.get_friend_id(posts.creator_id, acc)
+    from posts_access acc
+    where
+      acc.post_id     = posts.id    and
+      acc.access_type = 'blacklist'
+  )
 );
 
 create policy insert_policy

@@ -100,6 +100,9 @@ create table posts (
 , publish_date  date      not null     default now()
 , audience      audience  not null     default 'friends'
 );
+-- posts would be searched by date or creator
+create index post_publish_date_idx on posts(publish_date);
+create index post_creator_id_idx on posts(creator_id);
 
 create table posts_access (
   post_id         int          not null  references posts(id)  on delete cascade
