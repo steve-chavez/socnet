@@ -76,7 +76,7 @@ create type access_type as enum (
 );
 
 create table users_details_access (
-  user_details_id  int          not null  references users_details(user_id)  on delete cascade
+  user_details_id   int          not null  references users_details(user_id)  on delete cascade
 , source_user_id    int          not null
 , target_user_id    int          not null
 , access_type       access_type  not null

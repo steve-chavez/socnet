@@ -52,10 +52,7 @@ using(
     when 'friends'
       then util.jwt_user_id() in (
         select
-          case when f.source_user_id = users_details.user_id
-            then f.target_user_id
-            else f.source_user_id
-          end
+          util.get_friend_id(users_details.user_id, f)
         from friendships f
         where
           status = 'accepted' and
@@ -68,22 +65,16 @@ using(
     when 'friends_whitelist'
       then util.jwt_user_id() in (
         select
-          case when acc.source_user_id = users_details.user_id
-            then acc.target_user_id
-            else acc.source_user_id
-          end
+          util.get_friend_id(users_details.user_id, acc)
         from users_details_access acc
         where
           acc.user_details_id = users_details.user_id  and
-          acc.access_type      = 'whitelist'
+          acc.access_type     = 'whitelist'
       )
     when 'friends_blacklist'
       then util.jwt_user_id() in (
         select
-          case when f.source_user_id = users_details.user_id
-            then f.target_user_id
-            else f.source_user_id
-          end
+          util.get_friend_id(users_details.user_id, f)
         from friendships f
         where
           status = 'accepted' and
@@ -92,10 +83,7 @@ using(
         except
 
         select
-          case when acc.source_user_id = users_details.user_id
-            then acc.target_user_id
-            else acc.source_user_id
-          end
+          util.get_friend_id(users_details.user_id, acc)
         from users_details_access acc
         where
           acc.user_details_id = users_details.user_id  and
@@ -251,7 +239,7 @@ to socnet_user
 using (
   util.jwt_user_id() = posts.creator_id -- creator can always see its post
   or
-  case audience
+  case posts.audience
     when 'public'
       then true
     when 'personal'
@@ -259,10 +247,7 @@ using (
     when 'friends'
       then util.jwt_user_id() in (
         select
-          case when f.source_user_id = posts.creator_id
-            then f.target_user_id
-            else f.source_user_id
-          end
+          util.get_friend_id(posts.creator_id, f)
         from friendships f
         where
           status = 'accepted' and
@@ -275,10 +260,7 @@ using (
     when 'friends_whitelist'
       then util.jwt_user_id() in (
         select
-          case when acc.source_user_id = posts.creator_id
-            then acc.target_user_id
-            else acc.source_user_id
-          end
+          util.get_friend_id(posts.creator_id, acc)
         from posts_access acc
         where
           acc.post_id     = posts.id    and
@@ -287,10 +269,7 @@ using (
     when 'friends_blacklist'
       then util.jwt_user_id() in (
         select
-          case when f.source_user_id = posts.creator_id
-            then f.target_user_id
-            else f.source_user_id
-          end
+          util.get_friend_id(posts.creator_id, f)
         from friendships f
         where
           status = 'accepted' and
@@ -299,10 +278,7 @@ using (
         except
 
         select
-          case when acc.source_user_id = posts.creator_id
-            then acc.target_user_id
-            else acc.source_user_id
-          end
+          util.get_friend_id(posts.creator_id, acc)
         from posts_access acc
         where
           acc.post_id     = posts.id    and
