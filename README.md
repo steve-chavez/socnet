@@ -1,6 +1,6 @@
 # Social Network
 
-A sample schema to be used as a base for a PostgREST tutorial on RLS.
+A sample schema to be used as a base for a PostgREST tutorial on RLS. Inspired by this [comment](https://github.com/PostgREST/postgrest-docs/issues/81#issuecomment-312472492).
 
 ## Requirements
 
@@ -271,3 +271,5 @@ Result: PASS
 
 A proper example of a VIEW with RLS is currently blocked because of a [postgres bug](https://www.postgresql.org/message-id/15708-d65cab2ce9b1717a@postgresql.org).
 See this [branch](https://github.com/steve-chavez/socnet/tree/view-rls) for a failing test.
+
+A workaround for this is mentioned in https://github.com/PostgREST/postgrest-docs/issues/81#issuecomment-487405582
