@@ -49,7 +49,10 @@ select
     select * from users_details_access;
     $$,
     42501,
-    'permission denied for relation users_details_access',
+    case when pg_version_num() >= 110000
+      then 'permission denied for table users_details_access'
+      else 'permission denied for relation users_details_access'
+    end,
     'anon cannot see any users_details_access'
   );
 
@@ -163,7 +166,10 @@ select
     select * from posts_access;
     $$,
     42501,
-    'permission denied for relation posts_access',
+    case when pg_version_num() >= 110000
+      then 'permission denied for table posts_access'
+      else 'permission denied for relation posts_access'
+    end,
     'anon cannot see any posts_access'
   );
 
@@ -177,7 +183,10 @@ select
     select * from friendships;
     $$,
     42501,
-    'permission denied for relation friendships',
+    case when pg_version_num() >= 110000
+      then 'permission denied for table friendships'
+      else 'permission denied for relation friendships'
+    end,
     'anon cannot see any friendships'
   );
 
